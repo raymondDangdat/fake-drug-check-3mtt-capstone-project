@@ -287,7 +287,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "[ -z \"$FLUTTER_ROOT\" ] && [ -f \"$SRCROOT/Flutter/flutter_export_environment.sh\" ] && . \"$SRCROOT/Flutter/flutter_export_environment.sh\"\n/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" embed_and_thin\nmkdir -p \"$TARGET_BUILD_DIR/$FRAMEWORKS_FOLDER_PATH\"\nif [ -d \"$BUILT_PRODUCTS_DIR/Flutter.framework\" ]; then\n    rsync -av --delete \"$BUILT_PRODUCTS_DIR/Flutter.framework\" \"$TARGET_BUILD_DIR/$FRAMEWORKS_FOLDER_PATH/\"\nfi\nif [ -d \"$BUILT_PRODUCTS_DIR/App.framework\" ]; then\n    rsync -av --delete \"$BUILT_PRODUCTS_DIR/App.framework\" \"$TARGET_BUILD_DIR/$FRAMEWORKS_FOLDER_PATH/\"\nfi\nxattr -cr \"$BUILT_PRODUCTS_DIR\" 2>/dev/null || true";
+			shellScript = "if [ -z \"$FLUTTER_ROOT\" ]; then\n  if [ -f \"$SRCROOT/Flutter/flutter_export_environment.sh\" ]; then\n    . \"$SRCROOT/Flutter/flutter_export_environment.sh\"\n  elif [ -f \"$SRCROOT/Flutter/Generated.xcconfig\" ]; then\n    eval $(grep -E '^[A-Z_]+=' \"$SRCROOT/Flutter/Generated.xcconfig\" | sed -E 's/([A-Z_]+)=(.*)/export \\1=\"\\2\"/')\n  fi\nfi\n/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" embed_and_thin\nmkdir -p \"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}\"\nif [ -d \"${BUILT_PRODUCTS_DIR}/Flutter.framework\" ]; then\n  cp -R \"${BUILT_PRODUCTS_DIR}/Flutter.framework\" \"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/\"\nfi\nif [ -d \"${BUILT_PRODUCTS_DIR}/App.framework\" ]; then\n  cp -R \"${BUILT_PRODUCTS_DIR}/App.framework\" \"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/\"\nfi\nif [ -d \"${BUILT_PRODUCTS_DIR}/flutter_assets\" ]; then\n  cp -R \"${BUILT_PRODUCTS_DIR}/flutter_assets\" \"${TARGET_BUILD_DIR}/Runner.app/\"\nfi\nxattr -cr \"$BUILT_PRODUCTS_DIR\" 2>/dev/null || true";
 		};
 		504193AE0AE49CD2BC1D6C53 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -341,7 +341,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "[ -z \"$FLUTTER_ROOT\" ] && [ -f \"$SRCROOT/Flutter/flutter_export_environment.sh\" ] && . \"$SRCROOT/Flutter/flutter_export_environment.sh\"\n/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" build\nxattr -cr \"$BUILT_PRODUCTS_DIR\" 2>/dev/null || true";
+			shellScript = "if [ -z \"$FLUTTER_ROOT\" ]; then\n  if [ -f \"$SRCROOT/Flutter/flutter_export_environment.sh\" ]; then\n    . \"$SRCROOT/Flutter/flutter_export_environment.sh\"\n  elif [ -f \"$SRCROOT/Flutter/Generated.xcconfig\" ]; then\n    eval $(grep -E '^[A-Z_]+=' \"$SRCROOT/Flutter/Generated.xcconfig\" | sed -E 's/([A-Z_]+)=(.*)/export \\1=\"\\2\"/')\n  fi\nfi\nxattr -cr \"$FLUTTER_ROOT/bin/cache/artifacts/engine\" 2>/dev/null || true\n/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" build\nxattr -cr \"$BUILT_PRODUCTS_DIR\" 2>/dev/null || true";
 		};
 		BF68CEAAF82E08CBAA79B83D /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
