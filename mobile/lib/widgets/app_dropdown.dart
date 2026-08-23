@@ -38,7 +38,9 @@ class AppDropdown<T> extends StatelessWidget {
         DropdownButtonFormField<T>(
           initialValue: value,
           onChanged: onChanged,
-          icon: const Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.textSecondary),
+          isExpanded: true, // Prevents horizontal overflow
+          isDense: true,
+          icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 20, color: AppColors.textSecondary),
           dropdownColor: AppColors.surface,
           borderRadius: AppRadius.md,
           style: AppTypography.body.copyWith(color: AppColors.textPrimary),
@@ -46,11 +48,12 @@ class AppDropdown<T> extends StatelessWidget {
             helperText: helperText,
             helperStyle: AppTypography.bodySmall,
             prefixIcon: prefixIcon != null
-                ? Icon(prefixIcon, size: 20, color: AppColors.textMuted)
+                ? Icon(prefixIcon, size: 18, color: AppColors.textMuted)
                 : null,
+            prefixIconConstraints: const BoxConstraints(minWidth: 36, minHeight: 36),
             filled: true,
             fillColor: AppColors.surface,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
             border: OutlineInputBorder(
               borderRadius: AppRadius.md,
               borderSide: const BorderSide(color: AppColors.border),
@@ -70,6 +73,7 @@ class AppDropdown<T> extends StatelessWidget {
               child: Text(
                 itemLabel(item),
                 style: AppTypography.body.copyWith(color: AppColors.textPrimary),
+                overflow: TextOverflow.ellipsis,
               ),
             );
           }).toList(),
