@@ -1,32 +1,33 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-
 import '../services/api_service.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_radius.dart';
+import '../theme/app_spacing.dart';
+import '../theme/app_typography.dart';
+import '../widgets/app_card.dart';
+import '../widgets/disclaimer_card.dart';
+import '../widgets/responsive_layout.dart';
+import '../widgets/status_badge.dart';
+import 'barcode_scanner_sheet.dart';
 
-/// Home screen — landing page with hero section and feature cards.
+/// Home verification portal screen with safe-area spacing and clean mobile header.
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final ValueChanged<int>? onNavigateTab;
+
+  const HomeScreen({super.key, this.onNavigateTab});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _animController;
+class _HomeScreenState extends State<HomeScreen> {
   bool _apiHealthy = false;
   bool _checkingHealth = true;
 
   @override
   void initState() {
     super.initState();
-    _animController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 800),
-    );
-    _animController.forward();
     _checkApiHealth();
   }
 
@@ -41,110 +42,248 @@ class _HomeScreenState extends State<HomeScreen>
     }
   }
 
-  @override
-  void dispose() {
-    _animController.dispose();
-    super.dispose();
+  Future<void> _handleBarcodeScan() async {
+    final barcode = await Navigator.push<String>(
+      context,
+      MaterialPageRoute(builder: (context) => const BarcodeScannerSheet()),
+    );
+
+    if (barcode != null && barcode.isNotEmpty && mounted) {
+      Navigator.pushNamed(context, '/check', arguments: {'barcode': barcode});
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final isDesktop = ResponsiveLayout.isDesktop(context);
+
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xFF0D2137), Color(0xFF0A1628)],
-          ),
-        ),
-        child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        top: !isDesktop, // Safe area padding beneath dynamic island / notch
+        child: SingleChildScrollView(
+          padding: isDesktop
+              ? AppSpacing.screenPaddingDesktop
+              : AppSpacing.screenPaddingMobile,
+          child: MaxWidthContainer(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 16),
+                // Top Brand & Engine Status Bar on Mobile
+                if (!isDesktop) ...[
+                  const SizedBox(height: 4),
+                  _buildMobileBrandHeader(),
+                  const SizedBox(height: 18),
+                ],
 
-                // Header row
-                _buildHeader(),
-                const SizedBox(height: 32),
-
-                // Hero Section
-                _buildHeroCard(),
+                // Hero Heading & Subtitle
+                Text(
+                  'Verify Before You Trust',
+                  style: AppTypography.display,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Check pharmaceutical packaging details, NAFDAC registration formats, and manufacturer records to detect counterfeit medication risks.',
+                  style: AppTypography.bodyLarge,
+                ),
                 const SizedBox(height: 24),
 
-                // API status indicator
-                _buildStatusIndicator(),
-                const SizedBox(height: 28),
-
-                // Feature cards
-                Text(
-                  'How It Works',
-                  style: Theme.of(context).textTheme.headlineSmall,
-                ),
-                const SizedBox(height: 16),
-                _buildFeatureCard(
-                  icon: Icons.edit_note_rounded,
-                  title: 'Enter Drug Details',
-                  description: 'Input the drug name, manufacturer, NAFDAC number, barcode, and other details.',
-                  color: const Color(0xFF448AFF),
-                ),
-                const SizedBox(height: 12),
-                _buildFeatureCard(
-                  icon: Icons.qr_code_scanner_rounded,
-                  title: 'Scan Barcode',
-                  description: 'Use your camera to scan the barcode on the drug package for quick input.',
-                  color: const Color(0xFF7C4DFF),
-                ),
-                const SizedBox(height: 12),
-                _buildFeatureCard(
-                  icon: Icons.analytics_rounded,
-                  title: 'AI Analysis',
-                  description: 'Our ML model analyzes patterns and flags suspicious drugs with detailed explanations.',
-                  color: const Color(0xFF00E676),
-                ),
-                const SizedBox(height: 12),
-                _buildFeatureCard(
-                  icon: Icons.history_rounded,
-                  title: 'Track History',
-                  description: 'All your past drug checks are saved locally for quick reference.',
-                  color: const Color(0xFFFF9100),
-                ),
-
-                const SizedBox(height: 32),
-
-                // Disclaimer
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.amber.withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: Colors.amber.withValues(alpha: 0.2),
-                    ),
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                // Two Primary Action Cards (Scan vs Form)
+                ResponsiveLayout(
+                  mobile: Column(
                     children: [
-                      const Icon(Icons.warning_amber_rounded,
-                          color: Colors.amber, size: 20),
-                      const SizedBox(width: 12),
+                      _buildPrimaryActionCard(
+                        icon: Icons.qr_code_scanner_rounded,
+                        badge: 'Fastest',
+                        title: 'Scan Product Barcode',
+                        description:
+                            'Use your device camera to instantly scan the barcode on the carton or blister pack.',
+                        actionLabel: 'Open Scanner',
+                        isPrimary: true,
+                        onTap: _handleBarcodeScan,
+                      ),
+                      const SizedBox(height: 12),
+                      _buildPrimaryActionCard(
+                        icon: Icons.edit_note_rounded,
+                        badge: 'Manual Entry',
+                        title: 'Enter Medication Details',
+                        description:
+                            'Input the drug name, NAFDAC registration number, batch number, and manufacturer.',
+                        actionLabel: 'Open Form',
+                        isPrimary: false,
+                        onTap: () => Navigator.pushNamed(context, '/check'),
+                      ),
+                    ],
+                  ),
+                  desktop: Row(
+                    children: [
                       Expanded(
-                        child: Text(
-                          'This tool is for educational and research purposes. '
-                          'Always verify drugs with NAFDAC and consult a licensed pharmacist.',
-                          style: GoogleFonts.inter(
-                            fontSize: 12,
-                            color: Colors.amber.shade200,
-                            height: 1.5,
-                          ),
+                        child: _buildPrimaryActionCard(
+                          icon: Icons.qr_code_scanner_rounded,
+                          badge: 'Fastest Method',
+                          title: 'Scan Product Barcode',
+                          description:
+                              'Use your camera to scan the 13-digit EAN barcode printed on the packaging.',
+                          actionLabel: 'Scan Barcode',
+                          isPrimary: true,
+                          onTap: _handleBarcodeScan,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _buildPrimaryActionCard(
+                          icon: Icons.edit_note_rounded,
+                          badge: 'Detailed Check',
+                          title: 'Enter Medication Details',
+                          description:
+                              'Fill in NAFDAC number, batch, dosage, and manufacturer for comprehensive AI analysis.',
+                          actionLabel: 'Enter Details',
+                          isPrimary: false,
+                          onTap: () => Navigator.pushNamed(context, '/check'),
                         ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 28),
+
+                // Quick Sample Demo Section (Helpful for academic capstone presentation)
+                AppCard(
+                  backgroundColor: AppColors.surface,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(Icons.science_outlined, size: 18, color: AppColors.primary),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Test With Verification Presets',
+                            style: AppTypography.title.copyWith(fontSize: 14),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'Select a demo medication profile to immediately test the AI classification engine.',
+                        style: AppTypography.bodySmall,
+                      ),
+                      const SizedBox(height: 14),
+                      Wrap(
+                        spacing: 10,
+                        runSpacing: 10,
+                        children: [
+                          _buildPresetChip(
+                            label: 'Genuine Paracetamol Sample',
+                            icon: Icons.check_circle_outline_rounded,
+                            color: AppColors.genuine,
+                            bgColor: AppColors.genuineSurface,
+                            borderColor: AppColors.genuineBorder,
+                            onTap: () {
+                              Navigator.pushNamed(
+                                context,
+                                '/check',
+                                arguments: {'preset': 'genuine'},
+                              );
+                            },
+                          ),
+                          _buildPresetChip(
+                            label: 'Counterfeit / Suspicious Sample',
+                            icon: Icons.warning_amber_rounded,
+                            color: AppColors.suspicious,
+                            bgColor: AppColors.suspiciousSurface,
+                            borderColor: AppColors.suspiciousBorder,
+                            onTap: () {
+                              Navigator.pushNamed(
+                                context,
+                                '/check',
+                                arguments: {'preset': 'suspicious'},
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 32),
+
+                // How It Works Section
+                Text('How It Works', style: AppTypography.h2),
+                const SizedBox(height: 4),
+                Text(
+                  'Three simple steps to verify medication before consumption.',
+                  style: AppTypography.bodySmall,
+                ),
+                const SizedBox(height: 16),
+
+                ResponsiveLayout(
+                  mobile: Column(
+                    children: [
+                      _buildStepCard(
+                        step: '1',
+                        title: 'Capture or Enter Details',
+                        description:
+                            'Scan the product barcode or type in the drug name, NAFDAC number, and batch code.',
+                        icon: Icons.camera_alt_outlined,
+                      ),
+                      const SizedBox(height: 10),
+                      _buildStepCard(
+                        step: '2',
+                        title: 'AI Pattern Analysis',
+                        description:
+                            'The system checks formatting, regex validity, manufacturer legitimacy, and formulation consistency.',
+                        icon: Icons.insights_outlined,
+                      ),
+                      const SizedBox(height: 10),
+                      _buildStepCard(
+                        step: '3',
+                        title: 'Review Risk & Action',
+                        description:
+                            'Receive an interpretable risk assessment and clear guidance on physical packaging verification.',
+                        icon: Icons.fact_check_outlined,
+                      ),
+                    ],
+                  ),
+                  desktop: Row(
+                    children: [
+                      Expanded(
+                        child: _buildStepCard(
+                          step: '1',
+                          title: 'Capture or Enter Details',
+                          description:
+                            'Scan the product barcode or enter NAFDAC registration & batch details.',
+                          icon: Icons.camera_alt_outlined,
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: _buildStepCard(
+                          step: '2',
+                          title: 'AI Pattern Analysis',
+                          description:
+                            'The model checks formatting, regex schemas, manufacturer legitimacy, and origin.',
+                          icon: Icons.insights_outlined,
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: _buildStepCard(
+                          step: '3',
+                          title: 'Review Risk & Action',
+                          description:
+                            'Get a clear risk verdict with actionable advice on what to inspect next.',
+                          icon: Icons.fact_check_outlined,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 32),
+
+                // Regulatory & NAFDAC Notice Card
+                const DisclaimerCard(),
+                const SizedBox(height: 36),
               ],
             ),
           ),
@@ -153,256 +292,249 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildMobileBrandHeader() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 38,
-              height: 38,
-              decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: LinearGradient(
-                  colors: [Color(0xFF448AFF), Color(0xFF00E676)],
-                ),
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: AppColors.primary,
+                borderRadius: AppRadius.md,
               ),
               child: const Icon(
                 Icons.verified_user_rounded,
-                size: 20,
+                size: 18,
                 color: Colors.white,
               ),
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: 8),
             Text(
               'FakeDrugChecker',
-              style: GoogleFonts.outfit(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: Colors.white,
+              style: AppTypography.title.copyWith(fontSize: 16),
+            ),
+            const SizedBox(width: 6),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+              decoration: BoxDecoration(
+                color: AppColors.primarySurface,
+                borderRadius: AppRadius.sm,
+              ),
+              child: Text(
+                'NG',
+                style: AppTypography.caption.copyWith(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 10,
+                ),
               ),
             ),
           ],
         ),
-        IconButton(
-          onPressed: () => Navigator.pushNamed(context, '/history'),
-          icon: const Icon(Icons.history_rounded, color: Colors.white70),
-          tooltip: 'History',
-        ),
+        _buildHealthStatusPill(),
       ],
     );
   }
 
-  Widget _buildHeroCard() {
-    return FadeTransition(
-      opacity: CurvedAnimation(parent: _animController, curve: Curves.easeOut),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(28),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(24),
-          gradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Color(0xFF1A3A5C), Color(0xFF162240)],
-          ),
-          border: Border.all(
-            color: Colors.white.withValues(alpha: 0.06),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF448AFF).withValues(alpha: 0.1),
-              blurRadius: 30,
-              offset: const Offset(0, 10),
-            ),
-          ],
-        ),
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: const Color(0xFF448AFF).withValues(alpha: 0.15),
-              ),
-              child: const Icon(
-                Icons.medication_rounded,
-                size: 40,
-                color: Color(0xFF448AFF),
-              ),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              'Verify Your Medicine',
-              style: GoogleFonts.outfit(
-                fontSize: 24,
-                fontWeight: FontWeight.w700,
-                color: Colors.white,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Check if a drug is genuine or suspicious using AI-powered analysis',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.inter(
-                fontSize: 14,
-                color: Colors.white54,
-                height: 1.5,
-              ),
-            ),
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              height: 52,
-              child: ElevatedButton(
-                onPressed: () => Navigator.pushNamed(context, '/check'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF448AFF),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  elevation: 8,
-                  shadowColor: const Color(0xFF448AFF).withValues(alpha: 0.5),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.search_rounded, size: 22),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Check a Drug',
-                      style: GoogleFonts.outfit(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStatusIndicator() {
-    Color color;
-    String text;
-    IconData icon;
-
+  Widget _buildHealthStatusPill() {
     if (_checkingHealth) {
-      color = Colors.amber;
-      text = 'Checking server...';
-      icon = Icons.sync_rounded;
-    } else if (_apiHealthy) {
-      color = const Color(0xFF00E676);
-      text = 'Server online — Model ready';
-      icon = Icons.check_circle_rounded;
-    } else {
-      color = const Color(0xFFFF1744);
-      text = 'Server offline — Check connection';
-      icon = Icons.error_outline_rounded;
+      return const StatusBadge(
+        label: 'Connecting...',
+        variant: StatusBadgeVariant.neutral,
+        icon: Icons.sync_rounded,
+        isCompact: true,
+      );
     }
-
-    return GestureDetector(
+    if (_apiHealthy) {
+      return const StatusBadge.genuine(
+        label: 'Engine Ready',
+        isCompact: true,
+      );
+    }
+    return InkWell(
       onTap: () {
         setState(() => _checkingHealth = true);
         _checkApiHealth();
       },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: color.withValues(alpha: 0.25)),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (_checkingHealth)
-              SizedBox(
-                width: 16,
-                height: 16,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation(color),
-                ),
-              )
-            else
-              Icon(icon, color: color, size: 18),
-            const SizedBox(width: 8),
-            Text(
-              text,
-              style: GoogleFonts.inter(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: color,
-              ),
+      borderRadius: AppRadius.pill,
+      child: const StatusBadge.suspicious(
+        label: 'Offline (Tap to Retry)',
+        isCompact: true,
+      ),
+    );
+  }
+
+  Widget _buildPrimaryActionCard({
+    required IconData icon,
+    required String badge,
+    required String title,
+    required String description,
+    required String actionLabel,
+    required bool isPrimary,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: isPrimary ? AppColors.primarySurface : AppColors.surface,
+      borderRadius: AppRadius.lg,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: AppRadius.lg,
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            borderRadius: AppRadius.lg,
+            border: Border.all(
+              color: isPrimary ? AppColors.primaryBorder : AppColors.border,
+              width: isPrimary ? 1.5 : 1.0,
             ),
-          ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: isPrimary ? AppColors.primary : AppColors.surfaceMuted,
+                      borderRadius: AppRadius.md,
+                    ),
+                    child: Icon(
+                      icon,
+                      color: isPrimary ? Colors.white : AppColors.textPrimary,
+                      size: 22,
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: isPrimary
+                          ? AppColors.primary.withValues(alpha: 0.12)
+                          : AppColors.surfaceMuted,
+                      borderRadius: AppRadius.sm,
+                    ),
+                    child: Text(
+                      badge,
+                      style: AppTypography.caption.copyWith(
+                        color: isPrimary ? AppColors.primary : AppColors.textSecondary,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Text(title, style: AppTypography.h3),
+              const SizedBox(height: 4),
+              Text(description, style: AppTypography.bodySmall),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Text(
+                    actionLabel,
+                    style: AppTypography.button.copyWith(
+                      color: isPrimary ? AppColors.primary : AppColors.textPrimary,
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Icon(
+                    Icons.arrow_forward_rounded,
+                    size: 16,
+                    color: isPrimary ? AppColors.primary : AppColors.textPrimary,
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildFeatureCard({
+  Widget _buildPresetChip({
+    required String label,
     required IconData icon,
-    required String title,
-    required String description,
     required Color color,
+    required Color bgColor,
+    required Color borderColor,
+    required VoidCallback onTap,
   }) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(16),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+    return Material(
+      color: bgColor,
+      borderRadius: AppRadius.md,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: AppRadius.md,
         child: Container(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.04),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+            borderRadius: AppRadius.md,
+            border: Border.all(color: borderColor),
           ),
           child: Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(icon, color: color, size: 22),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: GoogleFonts.outfit(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      description,
-                      style: GoogleFonts.inter(
-                        fontSize: 12,
-                        color: Colors.white54,
-                        height: 1.4,
-                      ),
-                    ),
-                  ],
+              Icon(icon, size: 16, color: color),
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: AppTypography.button.copyWith(
+                  fontSize: 13,
+                  color: color,
                 ),
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildStepCard({
+    required String step,
+    required String title,
+    required String description,
+    required IconData icon,
+  }) {
+    return AppCard(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 32,
+            height: 32,
+            decoration: const BoxDecoration(
+              color: AppColors.primarySurface,
+              shape: BoxShape.circle,
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              step,
+              style: AppTypography.badge.copyWith(
+                color: AppColors.primary,
+                fontSize: 13,
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: AppTypography.title.copyWith(fontSize: 14)),
+                const SizedBox(height: 2),
+                Text(description, style: AppTypography.bodySmall),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

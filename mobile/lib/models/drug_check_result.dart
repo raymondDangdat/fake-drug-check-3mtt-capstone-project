@@ -26,6 +26,29 @@ class DrugCheckResult {
   /// Whether the drug was classified as suspicious.
   bool get isSuspicious => prediction == 'Suspicious';
 
+  /// Clinical verdict title (human-centered, non-alarmist)
+  String get verdictTitle => isGenuine
+      ? 'Appears Consistent (Low Risk)'
+      : 'Suspicious Indicators Detected';
+
+  /// Clinical verdict summary
+  String get verdictSubtitle => isGenuine
+      ? 'Product details align with standard pharmaceutical reference patterns.'
+      : 'Discrepancies identified in format, manufacturer, or batch records.';
+
+  /// Helper getters for input fields
+  String get drugName =>
+      inputData['Drug Name'] ?? inputData['drug_name'] ?? 'Medication Check';
+
+  String get manufacturer =>
+      inputData['Manufacturer'] ?? inputData['manufacturer'] ?? 'Unspecified';
+
+  String get nafdacNumber =>
+      inputData['NAFDAC Number'] ?? inputData['nafdac_number'] ?? 'N/A';
+
+  String get barcode =>
+      inputData['Barcode'] ?? inputData['barcode'] ?? 'N/A';
+
   /// Create from API JSON response.
   factory DrugCheckResult.fromJson(
     Map<String, dynamic> json, {

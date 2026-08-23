@@ -35,6 +35,26 @@ class HistoryService {
     }).whereType<DrugCheckResult>().toList();
   }
 
+  /// Query history by search string and prediction status filter.
+  Future<List<DrugCheckResult>> queryHistory({
+    String query = '',
+    String? statusFilter, // 'All', 'Genuine', 'Suspicious'
+  }) async {
+    final all = await getHistory();
+    return all.where((item) {
+      final matchesQuery = query.isEmpty ||
+          item.drugName.toLowerCase().contains(query.toLowerCase()) ||
+          item.manufacturer.toLowerCase().contains(query.toLowerCase()) ||
+          item.nafdacNumber.toLowerCase().contains(query.toLowerCase());
+
+      final matchesStatus = statusFilter == null ||
+          statusFilter == 'All' ||
+          item.prediction == statusFilter;
+
+      return matchesQuery && matchesStatus;
+    }).toList();
+  }
+
   /// Clear all history.
   Future<void> clearHistory() async {
     final prefs = await SharedPreferences.getInstance();
