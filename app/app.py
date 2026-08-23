@@ -2,7 +2,7 @@
 app.py — Streamlit Web Application for Fake Drug Checker
 ==========================================================
 
-A modern, clinical, human-centered Nigerian healthcare web portal for:
+A modern, clean, clinical Nigerian healthcare web portal for:
     - Drug verification with 8 clinical fields
     - Barcode manual input or image upload (with pyzbar decoding)
     - Diagnostic risk reports with clinical verdict cards
@@ -58,168 +58,146 @@ st.set_page_config(
 
 
 # ==============================================================================
-# Custom CSS — Clean Clinical Healthcare Theme
+# Custom CSS — Clean Clinical Styling
 # ==============================================================================
 
 def inject_custom_css() -> None:
-    """Inject clean clinical CSS matching the Flutter design system."""
+    """Inject high-contrast clinical CSS matching the design system."""
     st.markdown("""
     <style>
     /* ---- Import Google Fonts ---- */
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
 
-    /* ---- Global Typography & Background ---- */
     html, body, [class*="css"] {
         font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif;
-        color: #0F172A;
-    }
-    .stApp {
-        background-color: #F8FAFC;
     }
 
-    /* ---- Clinical Header Banner ---- */
-    .clinical-header {
+    /* ---- Header Banner ---- */
+    .clinical-banner {
         background: linear-gradient(135deg, #0B6B48 0%, #064E35 100%);
-        padding: 2.2rem 2.5rem;
-        border-radius: 16px;
-        margin-bottom: 2rem;
+        padding: 2rem 2.2rem;
+        border-radius: 14px;
+        margin-bottom: 1.8rem;
         color: #ffffff;
-        box-shadow: 0 10px 25px -5px rgba(11, 107, 72, 0.2);
+        box-shadow: 0 4px 14px rgba(11, 107, 72, 0.15);
     }
-    .clinical-header .badge {
+    .clinical-banner h1 {
+        color: #ffffff !important;
+        font-size: 2rem;
+        font-weight: 800;
+        margin: 0 0 0.3rem 0;
+        letter-spacing: -0.5px;
+    }
+    .clinical-banner p {
+        color: #E2E8F0 !important;
+        font-size: 1rem;
+        margin: 0;
+        font-weight: 400;
+        line-height: 1.5;
+    }
+    .clinical-banner .country-badge {
         display: inline-block;
-        background: rgba(255, 255, 255, 0.18);
+        background: rgba(255, 255, 255, 0.2);
         color: #ffffff;
-        font-size: 0.75rem;
+        font-size: 0.72rem;
         font-weight: 700;
-        padding: 0.25rem 0.6rem;
-        border-radius: 9999px;
-        margin-bottom: 0.8rem;
+        padding: 0.2rem 0.55rem;
+        border-radius: 6px;
+        margin-bottom: 0.6rem;
         letter-spacing: 0.5px;
         text-transform: uppercase;
     }
-    .clinical-header h1 {
-        color: #ffffff !important;
-        font-size: 2.2rem;
-        font-weight: 800;
-        margin: 0 0 0.4rem 0;
-        letter-spacing: -0.5px;
-    }
-    .clinical-header p {
-        color: #E2E8F0;
-        font-size: 1.05rem;
-        margin: 0;
-        font-weight: 400;
-    }
-
-    /* ---- Section Cards ---- */
-    .form-section-card {
-        background-color: #ffffff;
-        border: 1px solid #E2E8F0;
-        border-radius: 14px;
-        padding: 1.5rem;
-        margin-bottom: 1.5rem;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-    }
-    .section-title {
-        font-size: 1.1rem;
-        font-weight: 700;
-        color: #0F172A;
-        margin-bottom: 0.2rem;
-    }
-    .section-subtitle {
-        font-size: 0.85rem;
-        color: #64748B;
-        margin-bottom: 1rem;
-    }
 
     /* ---- Result Cards ---- */
-    .result-card-genuine {
+    .verdict-card {
+        padding: 1.5rem 1.8rem;
+        border-radius: 12px;
+        margin: 1.2rem 0;
+    }
+    .verdict-genuine {
         background-color: #ECFDF5;
         border: 1.5px solid #A7F3D0;
         border-left: 6px solid #059669;
-        border-radius: 14px;
-        padding: 1.5rem 1.8rem;
-        margin: 1.2rem 0;
     }
-    .result-card-suspicious {
+    .verdict-genuine h2 {
+        color: #065F46 !important;
+        font-size: 1.4rem;
+        font-weight: 700;
+        margin: 0 0 0.3rem 0;
+    }
+    .verdict-genuine .subtext {
+        color: #047857;
+        font-size: 0.95rem;
+        margin-bottom: 0.5rem;
+    }
+    .verdict-genuine .confidence {
+        color: #065F46;
+        font-weight: 700;
+        font-size: 1.1rem;
+    }
+
+    .verdict-suspicious {
         background-color: #FFF1F2;
         border: 1.5px solid #FECDD3;
         border-left: 6px solid #DC2626;
-        border-radius: 14px;
-        padding: 1.5rem 1.8rem;
-        margin: 1.2rem 0;
     }
-    .result-card-genuine h2 {
-        color: #065F46 !important;
-        font-size: 1.45rem;
-        font-weight: 700;
-        margin: 0 0 0.3rem 0;
-    }
-    .result-card-suspicious h2 {
+    .verdict-suspicious h2 {
         color: #991B1B !important;
-        font-size: 1.45rem;
+        font-size: 1.4rem;
         font-weight: 700;
         margin: 0 0 0.3rem 0;
+    }
+    .verdict-suspicious .subtext {
+        color: #B91C1C;
+        font-size: 0.95rem;
+        margin-bottom: 0.5rem;
+    }
+    .verdict-suspicious .confidence {
+        color: #991B1B;
+        font-weight: 700;
+        font-size: 1.1rem;
     }
 
-    /* ---- Diagnostic Finding Item ---- */
-    .finding-item {
+    /* ---- Diagnostic Findings & Guidance ---- */
+    .finding-pill {
         background-color: #F8FAFC;
         border: 1px solid #E2E8F0;
         border-radius: 8px;
-        padding: 0.75rem 1rem;
-        margin-bottom: 0.5rem;
-        font-size: 0.92rem;
+        padding: 0.65rem 0.9rem;
+        margin-bottom: 0.4rem;
+        font-size: 0.9rem;
         color: #334155;
     }
-
-    /* ---- Clinical Guidance Box ---- */
     .guidance-box {
         background-color: #F0F9FF;
         border: 1px solid #BAE6FD;
-        border-radius: 12px;
-        padding: 1.2rem 1.5rem;
-        margin-top: 1rem;
+        border-radius: 10px;
+        padding: 1.1rem 1.4rem;
+        margin: 0.8rem 0;
         color: #0C4A6E;
-        font-size: 0.95rem;
-        line-height: 1.55;
+        font-size: 0.93rem;
+        line-height: 1.5;
     }
-
-    /* ---- Regulatory Notice Box ---- */
     .disclaimer-box {
         background-color: #FFFBEB;
         border: 1px solid #FDE68A;
-        border-radius: 12px;
-        padding: 1.1rem 1.4rem;
+        border-radius: 10px;
+        padding: 1rem 1.3rem;
         margin: 1.5rem 0;
         color: #78350F;
         font-size: 0.88rem;
         line-height: 1.5;
     }
 
-    /* ---- Button Styling ---- */
-    .stButton > button {
-        border-radius: 10px;
-        font-weight: 600;
-        padding: 0.65rem 1.8rem;
-        font-size: 0.95rem;
-        transition: all 0.2s ease;
-    }
-    .stButton > button[kind="primary"] {
-        background-color: #0B6B48 !important;
-        border-color: #0B6B48 !important;
-        color: #ffffff !important;
-    }
-    .stButton > button[kind="primary"]:hover {
-        background-color: #064E35 !important;
-        border-color: #064E35 !important;
-    }
-
-    /* ---- Sidebar Styling ---- */
-    [data-testid="stSidebar"] {
-        background-color: #FFFFFF;
-        border-right: 1px solid #E2E8F0;
+    /* ---- Clean Section Headers ---- */
+    .form-header {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #0B6B48;
+        padding-bottom: 0.3rem;
+        margin-top: 1rem;
+        margin-bottom: 0.8rem;
+        border-bottom: 1.5px solid #E2E8F0;
     }
 
     /* ---- Hide Streamlit Branding ---- */
@@ -383,10 +361,10 @@ def main() -> None:
     if "sample_data" not in st.session_state:
         st.session_state.sample_data = {}
 
-    # ---- Clinical Header ----
+    # ---- Clinical Banner ----
     st.markdown("""
-    <div class="clinical-header">
-        <span class="badge">🇳🇬 Nigeria Medication Authenticity Portal</span>
+    <div class="clinical-banner">
+        <span class="country-badge">🇳🇬 Nigeria Medication Authenticity Portal</span>
         <h1>Verify Before You Trust</h1>
         <p>Check pharmaceutical packaging details, NAFDAC registration formats, and manufacturer records to detect counterfeit medication risks.</p>
     </div>
@@ -402,7 +380,7 @@ def main() -> None:
     # ==================================================================
     with tab_check:
         # Quick sample presets
-        st.markdown("##### ⚡ Quick Demonstration Presets")
+        st.markdown("**⚡ Quick Demonstration Presets**")
         col_s1, col_s2, col_s3 = st.columns(3)
 
         with col_s1:
@@ -426,12 +404,8 @@ def main() -> None:
         # Form with 3 clinical sections
         with st.form("drug_check_form"):
             # Section 1: Medication Identity
-            st.markdown("""
-            <div class="form-section-card">
-                <div class="section-title">1. Medication Identity</div>
-                <div class="section-subtitle">Active product name, dosage form, and strength</div>
-            </div>
-            """, unsafe_allow_html=True)
+            st.markdown('<div class="form-header">1. Medication Identity</div>', unsafe_allow_html=True)
+            st.caption("Active product name, dosage form, and strength")
 
             col1, col2, col3 = st.columns(3)
             with col1:
@@ -457,12 +431,8 @@ def main() -> None:
                 )
 
             # Section 2: Identifiers & Packaging
-            st.markdown("""
-            <div class="form-section-card">
-                <div class="section-title">2. Packaging & Registration Identifiers</div>
-                <div class="section-subtitle">NAFDAC registration number, EAN-13 barcode, and batch code</div>
-            </div>
-            """, unsafe_allow_html=True)
+            st.markdown('<div class="form-header">2. Packaging & Registration Identifiers</div>', unsafe_allow_html=True)
+            st.caption("NAFDAC registration number, EAN-13 barcode, and batch code")
 
             col4, col5, col6 = st.columns(3)
             with col4:
@@ -488,12 +458,8 @@ def main() -> None:
                 )
 
             # Section 3: Manufacturer & Origin
-            st.markdown("""
-            <div class="form-section-card">
-                <div class="section-title">3. Manufacturer & Country of Origin</div>
-                <div class="section-subtitle">Entity responsible for production and distribution</div>
-            </div>
-            """, unsafe_allow_html=True)
+            st.markdown('<div class="form-header">3. Manufacturer & Country of Origin</div>', unsafe_allow_html=True)
+            st.caption("Entity responsible for production and distribution")
 
             col7, col8 = st.columns(2)
             with col7:
@@ -510,6 +476,8 @@ def main() -> None:
                     placeholder="e.g. Nigeria, India, China",
                     help="Country where medication was produced",
                 )
+
+            st.markdown("<br>", unsafe_allow_html=True)
 
             # Submit
             submit_clicked = st.form_submit_button(
@@ -700,14 +668,14 @@ def _display_results(result: dict) -> None:
         if is_genuine
         else "Discrepancies identified in format, manufacturer, or batch records."
     )
-    card_class = "result-card-genuine" if is_genuine else "result-card-suspicious"
+    card_class = "verdict-genuine" if is_genuine else "verdict-suspicious"
     icon = "✅" if is_genuine else "⚠️"
 
     st.markdown(f"""
-    <div class="{card_class}">
+    <div class="verdict-card {card_class}">
         <h2>{icon} {verdict_title}</h2>
-        <div style="font-size: 1rem; margin-bottom: 0.5rem;">{verdict_subtitle}</div>
-        <div style="font-weight: 700; font-size: 1.15rem;">AI Model Confidence: {result['confidence_percent']}</div>
+        <div class="subtext">{verdict_subtitle}</div>
+        <div class="confidence">AI Model Confidence: {result['confidence_percent']}</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -721,7 +689,7 @@ def _display_results(result: dict) -> None:
         is_pos = "✅" in exp or "match" in exp.lower() or "valid" in exp.lower()
         badge = "✅" if is_pos else "⚠️"
         st.markdown(f"""
-        <div class="finding-item">{badge} {clean_exp}</div>
+        <div class="finding-pill">{badge} {clean_exp}</div>
         """, unsafe_allow_html=True)
 
     # Clinical Guidance Box
