@@ -20,7 +20,8 @@ class ApiService {
         return data['model_loaded'] == true;
       }
       return false;
-    } catch (_) {
+    } catch (e) {
+      print('DEBUG: ApiService.isHealthy failed: $e');
       return false;
     }
   }
