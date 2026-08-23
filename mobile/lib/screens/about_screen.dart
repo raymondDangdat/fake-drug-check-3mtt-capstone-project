@@ -124,57 +124,46 @@ class AboutScreen extends StatelessWidget {
                 subtitle: 'What each risk level means for consumers',
               ),
               const SizedBox(height: 10),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: AppCard(
-                      borderColor: AppColors.genuineBorder,
-                      backgroundColor: AppColors.genuineSurface,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              const Icon(Icons.check_circle_rounded, color: AppColors.genuine, size: 18),
-                              const SizedBox(width: 8),
-                              Text('Appears Consistent', style: AppTypography.title.copyWith(color: AppColors.genuine)),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
+              ResponsiveLayout(
+                mobile: Column(
+                  children: [
+                    _buildVerdictExplanationCard(
+                      isGenuine: true,
+                      title: 'Appears Consistent',
+                      description:
+                          'All checked identifiers, formats, and entities closely match verified pharmaceutical standards.',
+                    ),
+                    const SizedBox(height: 12),
+                    _buildVerdictExplanationCard(
+                      isGenuine: false,
+                      title: 'Suspicious Indicators',
+                      description:
+                          'One or more fields failed verification checks (e.g. invalid NAFDAC format or unknown manufacturer).',
+                    ),
+                  ],
+                ),
+                desktop: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: _buildVerdictExplanationCard(
+                        isGenuine: true,
+                        title: 'Appears Consistent',
+                        description:
                             'All checked identifiers, formats, and entities closely match verified pharmaceutical standards.',
-                            style: AppTypography.bodySmall.copyWith(color: const Color(0xFF065F46)),
-                          ),
-                        ],
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: AppCard(
-                      borderColor: AppColors.suspiciousBorder,
-                      backgroundColor: AppColors.suspiciousSurface,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              const Icon(Icons.warning_rounded, color: AppColors.suspicious, size: 18),
-                              const SizedBox(width: 8),
-                              Text('Suspicious Indicators', style: AppTypography.title.copyWith(color: AppColors.suspicious)),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: _buildVerdictExplanationCard(
+                        isGenuine: false,
+                        title: 'Suspicious Indicators',
+                        description:
                             'One or more fields failed verification checks (e.g. invalid NAFDAC format or unknown manufacturer).',
-                            style: AppTypography.bodySmall.copyWith(color: const Color(0xFF991B1B)),
-                          ),
-                        ],
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
               const SizedBox(height: 24),
 
@@ -219,6 +208,46 @@ class AboutScreen extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildVerdictExplanationCard({
+    required bool isGenuine,
+    required String title,
+    required String description,
+  }) {
+    final color = isGenuine ? AppColors.genuine : AppColors.suspicious;
+    final surfaceColor = isGenuine ? AppColors.genuineSurface : AppColors.suspiciousSurface;
+    final borderColor = isGenuine ? AppColors.genuineBorder : AppColors.suspiciousBorder;
+    final icon = isGenuine ? Icons.check_circle_rounded : Icons.warning_rounded;
+    final textColor = isGenuine ? const Color(0xFF065F46) : const Color(0xFF991B1B);
+
+    return AppCard(
+      borderColor: borderColor,
+      backgroundColor: surfaceColor,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: color, size: 18),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  title,
+                  style: AppTypography.title.copyWith(color: color),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            description,
+            style: AppTypography.bodySmall.copyWith(color: textColor),
+          ),
+        ],
       ),
     );
   }
