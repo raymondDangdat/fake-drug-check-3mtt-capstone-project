@@ -1,7 +1,47 @@
-# Python
+# ==============================================================================
+# Global & Operating System Files
+# ==============================================================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+*~
+*.icloud
+
+# macOS duplicate files (e.g., 'filename 2.ext', 'filename copy.ext')
+* [0-9]*
+* 2.*
+* 3.*
+* 4.*
+* 5.*
+* copy*
+
+# ==============================================================================
+# Environment, Credentials & Local Config
+# ==============================================================================
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.cert
+
+# ==============================================================================
+# Python & Machine Learning
+# ==============================================================================
 venv/
 .venv/
 env/
+ENV/
 __pycache__/
 *.py[cod]
 *$py.class
@@ -12,8 +52,6 @@ dist/
 downloads/
 eggs/
 .eggs/
-/lib/
-/lib64/
 parts/
 sdist/
 var/
@@ -21,55 +59,76 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+.pytest_cache/
+.coverage
+htmlcov/
+*.pkl.tmp
 
-# Jupyter Notebook
+# Jupyter Notebooks
 .ipynb_checkpoints/
+*/.ipynb_checkpoints/*
 
-# Environments & OS
-.env
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
+# Logs
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# IDE & Editors
+# ==============================================================================
+# IDEs & Text Editors
+# ==============================================================================
 .idea/
 .vscode/
-*.swp
-*.swo
+*.sublime-project
+*.sublime-workspace
+*.iml
+*.ipr
+*.iws
 
-# Flutter & Dart (Mobile)
-mobile/.dart_tool/
-mobile/.flutter-plugins
-mobile/.flutter-plugins-dependencies
-mobile/.pub-cache/
-mobile/.pub/
-mobile/build/
-mobile/.packages
+# ==============================================================================
+# Flutter & Dart (Mobile & Web)
+# ==============================================================================
+**/.dart_tool/
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+**/.pub-cache/
+**/.pub/
+**/build/
+**/.packages
+**/doc/api/
+app.*.symbols
+app.*.map.json
 
-# Android specific
-mobile/android/.gradle/
-mobile/android/local.properties
-mobile/android/app/build/
-mobile/android/app/debug
-mobile/android/app/profile
-mobile/android/app/release
-mobile/android/*.iml
-mobile/android/.idea/
+# Android Specific
+**/android/.gradle/
+**/android/local.properties
+**/android/app/build/
+**/android/app/debug/
+**/android/app/profile/
+**/android/app/release/
+**/android/*.iml
+**/android/.idea/
+**/android/captures/
+**/android/.cxx/
 
-# iOS specific
-mobile/ios/Pods/
-mobile/ios/.symlinks/
-mobile/ios/Flutter/ephemeral/
-mobile/ios/Flutter/Generated.xcconfig
-mobile/ios/Flutter/flutter_export_environment.sh
-mobile/ios/Flutter/Flutter.framework
-mobile/ios/Flutter/Flutter.podspec
-mobile/ios/Flutter/.last_build_id
-mobile/ios/*.xcworkspace
-mobile/ios/*.xcuserdata
-mobile/ios/Podfile.lock
+# iOS Specific
+**/ios/Pods/
+**/ios/.symlinks/
+**/ios/Flutter/ephemeral/
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/flutter_export_environment.sh
+**/ios/Flutter/Flutter.framework
+**/ios/Flutter/Flutter.podspec
+**/ios/Flutter/.last_build_id
+**/ios/*.xcworkspace
+**/ios/*.xcuserdata/
+**/ios/**/xcuserdata/
+**/ios/Podfile.lock
+**/ios/DerivedData/
+
+# Video / Large Screen Recordings
+*.mov
+*.mp4
+*.m4v
+*.avi
+*.wmv
