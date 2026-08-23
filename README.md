@@ -276,8 +276,8 @@ This project is licensed under the MIT License. See [LICENSE](LICENSE) for detai
 **FakeDrugChecker Team**
 
 - 🎓 Capstone Project — 3MTT Programme
-- 📧 Contact: [your-email@example.com]
-- 🔗 GitHub: [github.com/yourusername](https://github.com/yourusername)
+- 📧 Contact: raymonddangdat@gmail.com
+- 🔗 GitHub: raymondDangdat
 
 ---
 
