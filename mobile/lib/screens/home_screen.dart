@@ -11,7 +11,7 @@ import '../widgets/responsive_layout.dart';
 import '../widgets/status_badge.dart';
 import 'barcode_scanner_sheet.dart';
 
-/// Home verification portal screen.
+/// Home verification portal screen with safe-area spacing and clean mobile header.
 class HomeScreen extends StatefulWidget {
   final ValueChanged<int>? onNavigateTab;
 
@@ -55,252 +55,295 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDesktop = ResponsiveLayout.isDesktop(context);
+
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: SingleChildScrollView(
-        padding: ResponsiveLayout.isDesktop(context)
-            ? AppSpacing.screenPaddingDesktop
-            : AppSpacing.screenPaddingMobile,
-        child: MaxWidthContainer(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 8),
-
-              // Server Status & Top Pill
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _buildHealthStatusPill(),
-                  if (widget.onNavigateTab != null)
-                    TextButton.icon(
-                      onPressed: () => widget.onNavigateTab!(1),
-                      icon: const Icon(Icons.history_rounded, size: 18),
-                      label: const Text('Past Checks'),
-                    ),
+      body: SafeArea(
+        top: !isDesktop, // Safe area padding beneath dynamic island / notch
+        child: SingleChildScrollView(
+          padding: isDesktop
+              ? AppSpacing.screenPaddingDesktop
+              : AppSpacing.screenPaddingMobile,
+          child: MaxWidthContainer(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Top Brand & Engine Status Bar on Mobile
+                if (!isDesktop) ...[
+                  const SizedBox(height: 4),
+                  _buildMobileBrandHeader(),
+                  const SizedBox(height: 18),
                 ],
-              ),
-              const SizedBox(height: 20),
 
-              // Hero Heading & Subtitle
-              Text(
-                'Verify Before You Trust',
-                style: AppTypography.display,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Check pharmaceutical packaging details, NAFDAC registration formats, and manufacturer records to detect counterfeit medication risks.',
-                style: AppTypography.bodyLarge,
-              ),
-              const SizedBox(height: 24),
-
-              // Two Primary Action Cards (Scan vs Form)
-              ResponsiveLayout(
-                mobile: Column(
-                  children: [
-                    _buildPrimaryActionCard(
-                      icon: Icons.qr_code_scanner_rounded,
-                      badge: 'Fastest',
-                      title: 'Scan Product Barcode',
-                      description:
-                          'Use your device camera to instantly scan the barcode on the carton or blister pack.',
-                      actionLabel: 'Open Scanner',
-                      isPrimary: true,
-                      onTap: _handleBarcodeScan,
-                    ),
-                    const SizedBox(height: 12),
-                    _buildPrimaryActionCard(
-                      icon: Icons.edit_note_rounded,
-                      badge: 'Manual Entry',
-                      title: 'Enter Medication Details',
-                      description:
-                          'Input the drug name, NAFDAC registration number, batch number, and manufacturer.',
-                      actionLabel: 'Open Form',
-                      isPrimary: false,
-                      onTap: () => Navigator.pushNamed(context, '/check'),
-                    ),
-                  ],
+                // Hero Heading & Subtitle
+                Text(
+                  'Verify Before You Trust',
+                  style: AppTypography.display,
                 ),
-                desktop: Row(
-                  children: [
-                    Expanded(
-                      child: _buildPrimaryActionCard(
+                const SizedBox(height: 8),
+                Text(
+                  'Check pharmaceutical packaging details, NAFDAC registration formats, and manufacturer records to detect counterfeit medication risks.',
+                  style: AppTypography.bodyLarge,
+                ),
+                const SizedBox(height: 24),
+
+                // Two Primary Action Cards (Scan vs Form)
+                ResponsiveLayout(
+                  mobile: Column(
+                    children: [
+                      _buildPrimaryActionCard(
                         icon: Icons.qr_code_scanner_rounded,
-                        badge: 'Fastest Method',
+                        badge: 'Fastest',
                         title: 'Scan Product Barcode',
                         description:
-                            'Use your camera to scan the 13-digit EAN barcode printed on the packaging.',
-                        actionLabel: 'Scan Barcode',
+                            'Use your device camera to instantly scan the barcode on the carton or blister pack.',
+                        actionLabel: 'Open Scanner',
                         isPrimary: true,
                         onTap: _handleBarcodeScan,
                       ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: _buildPrimaryActionCard(
+                      const SizedBox(height: 12),
+                      _buildPrimaryActionCard(
                         icon: Icons.edit_note_rounded,
-                        badge: 'Detailed Check',
+                        badge: 'Manual Entry',
                         title: 'Enter Medication Details',
                         description:
-                            'Fill in NAFDAC number, batch, dosage, and manufacturer for comprehensive AI analysis.',
-                        actionLabel: 'Enter Details',
+                            'Input the drug name, NAFDAC registration number, batch number, and manufacturer.',
+                        actionLabel: 'Open Form',
                         isPrimary: false,
                         onTap: () => Navigator.pushNamed(context, '/check'),
                       ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 28),
-
-              // Quick Sample Demo Section (Helpful for academic capstone presentation)
-              AppCard(
-                backgroundColor: AppColors.surface,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        const Icon(Icons.science_outlined, size: 18, color: AppColors.primary),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Test With Verification Presets',
-                          style: AppTypography.title.copyWith(fontSize: 14),
+                    ],
+                  ),
+                  desktop: Row(
+                    children: [
+                      Expanded(
+                        child: _buildPrimaryActionCard(
+                          icon: Icons.qr_code_scanner_rounded,
+                          badge: 'Fastest Method',
+                          title: 'Scan Product Barcode',
+                          description:
+                              'Use your camera to scan the 13-digit EAN barcode printed on the packaging.',
+                          actionLabel: 'Scan Barcode',
+                          isPrimary: true,
+                          onTap: _handleBarcodeScan,
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      'Select a demo medication profile to immediately test the AI classification engine.',
-                      style: AppTypography.bodySmall,
-                    ),
-                    const SizedBox(height: 14),
-                    Wrap(
-                      spacing: 10,
-                      runSpacing: 10,
-                      children: [
-                        _buildPresetChip(
-                          label: 'Genuine Paracetamol Sample',
-                          icon: Icons.check_circle_outline_rounded,
-                          color: AppColors.genuine,
-                          bgColor: AppColors.genuineSurface,
-                          borderColor: AppColors.genuineBorder,
-                          onTap: () {
-                            Navigator.pushNamed(
-                              context,
-                              '/check',
-                              arguments: {'preset': 'genuine'},
-                            );
-                          },
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _buildPrimaryActionCard(
+                          icon: Icons.edit_note_rounded,
+                          badge: 'Detailed Check',
+                          title: 'Enter Medication Details',
+                          description:
+                              'Fill in NAFDAC number, batch, dosage, and manufacturer for comprehensive AI analysis.',
+                          actionLabel: 'Enter Details',
+                          isPrimary: false,
+                          onTap: () => Navigator.pushNamed(context, '/check'),
                         ),
-                        _buildPresetChip(
-                          label: 'Counterfeit / Suspicious Sample',
-                          icon: Icons.warning_amber_rounded,
-                          color: AppColors.suspicious,
-                          bgColor: AppColors.suspiciousSurface,
-                          borderColor: AppColors.suspiciousBorder,
-                          onTap: () {
-                            Navigator.pushNamed(
-                              context,
-                              '/check',
-                              arguments: {'preset': 'suspicious'},
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-                  ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 32),
+                const SizedBox(height: 28),
 
-              // How It Works Section
-              Text('How It Works', style: AppTypography.h2),
-              const SizedBox(height: 4),
-              Text(
-                'Three simple steps to verify medication before consumption.',
-                style: AppTypography.bodySmall,
-              ),
-              const SizedBox(height: 16),
-
-              ResponsiveLayout(
-                mobile: Column(
-                  children: [
-                    _buildStepCard(
-                      step: '1',
-                      title: 'Capture or Enter Details',
-                      description:
-                          'Scan the product barcode or type in the drug name, NAFDAC number, and batch code.',
-                      icon: Icons.camera_alt_outlined,
-                    ),
-                    const SizedBox(height: 10),
-                    _buildStepCard(
-                      step: '2',
-                      title: 'AI Pattern Analysis',
-                      description:
-                          'The system checks formatting, regex validity, manufacturer legitimacy, and formulation consistency.',
-                      icon: Icons.insights_outlined,
-                    ),
-                    const SizedBox(height: 10),
-                    _buildStepCard(
-                      step: '3',
-                      title: 'Review Risk & Action',
-                      description:
-                          'Receive an interpretable risk assessment and clear guidance on physical packaging verification.',
-                      icon: Icons.fact_check_outlined,
-                    ),
-                  ],
+                // Quick Sample Demo Section (Helpful for academic capstone presentation)
+                AppCard(
+                  backgroundColor: AppColors.surface,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(Icons.science_outlined, size: 18, color: AppColors.primary),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Test With Verification Presets',
+                            style: AppTypography.title.copyWith(fontSize: 14),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'Select a demo medication profile to immediately test the AI classification engine.',
+                        style: AppTypography.bodySmall,
+                      ),
+                      const SizedBox(height: 14),
+                      Wrap(
+                        spacing: 10,
+                        runSpacing: 10,
+                        children: [
+                          _buildPresetChip(
+                            label: 'Genuine Paracetamol Sample',
+                            icon: Icons.check_circle_outline_rounded,
+                            color: AppColors.genuine,
+                            bgColor: AppColors.genuineSurface,
+                            borderColor: AppColors.genuineBorder,
+                            onTap: () {
+                              Navigator.pushNamed(
+                                context,
+                                '/check',
+                                arguments: {'preset': 'genuine'},
+                              );
+                            },
+                          ),
+                          _buildPresetChip(
+                            label: 'Counterfeit / Suspicious Sample',
+                            icon: Icons.warning_amber_rounded,
+                            color: AppColors.suspicious,
+                            bgColor: AppColors.suspiciousSurface,
+                            borderColor: AppColors.suspiciousBorder,
+                            onTap: () {
+                              Navigator.pushNamed(
+                                context,
+                                '/check',
+                                arguments: {'preset': 'suspicious'},
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-                desktop: Row(
-                  children: [
-                    Expanded(
-                      child: _buildStepCard(
+                const SizedBox(height: 32),
+
+                // How It Works Section
+                Text('How It Works', style: AppTypography.h2),
+                const SizedBox(height: 4),
+                Text(
+                  'Three simple steps to verify medication before consumption.',
+                  style: AppTypography.bodySmall,
+                ),
+                const SizedBox(height: 16),
+
+                ResponsiveLayout(
+                  mobile: Column(
+                    children: [
+                      _buildStepCard(
                         step: '1',
                         title: 'Capture or Enter Details',
                         description:
-                            'Scan the product barcode or enter NAFDAC registration & batch details.',
+                            'Scan the product barcode or type in the drug name, NAFDAC number, and batch code.',
                         icon: Icons.camera_alt_outlined,
                       ),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: _buildStepCard(
+                      const SizedBox(height: 10),
+                      _buildStepCard(
                         step: '2',
                         title: 'AI Pattern Analysis',
                         description:
-                            'The model checks formatting, regex schemas, manufacturer legitimacy, and origin.',
+                            'The system checks formatting, regex validity, manufacturer legitimacy, and formulation consistency.',
                         icon: Icons.insights_outlined,
                       ),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: _buildStepCard(
+                      const SizedBox(height: 10),
+                      _buildStepCard(
                         step: '3',
                         title: 'Review Risk & Action',
                         description:
-                            'Get a clear risk verdict with actionable advice on what to inspect next.',
+                            'Receive an interpretable risk assessment and clear guidance on physical packaging verification.',
                         icon: Icons.fact_check_outlined,
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
+                  desktop: Row(
+                    children: [
+                      Expanded(
+                        child: _buildStepCard(
+                          step: '1',
+                          title: 'Capture or Enter Details',
+                          description:
+                            'Scan the product barcode or enter NAFDAC registration & batch details.',
+                          icon: Icons.camera_alt_outlined,
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: _buildStepCard(
+                          step: '2',
+                          title: 'AI Pattern Analysis',
+                          description:
+                            'The model checks formatting, regex schemas, manufacturer legitimacy, and origin.',
+                          icon: Icons.insights_outlined,
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: _buildStepCard(
+                          step: '3',
+                          title: 'Review Risk & Action',
+                          description:
+                            'Get a clear risk verdict with actionable advice on what to inspect next.',
+                          icon: Icons.fact_check_outlined,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 32),
+                const SizedBox(height: 32),
 
-              // Regulatory & NAFDAC Notice Card
-              const DisclaimerCard(),
-              const SizedBox(height: 36),
-            ],
+                // Regulatory & NAFDAC Notice Card
+                const DisclaimerCard(),
+                const SizedBox(height: 36),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
+  Widget _buildMobileBrandHeader() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: AppColors.primary,
+                borderRadius: AppRadius.md,
+              ),
+              child: const Icon(
+                Icons.verified_user_rounded,
+                size: 18,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              'FakeDrugChecker',
+              style: AppTypography.title.copyWith(fontSize: 16),
+            ),
+            const SizedBox(width: 6),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+              decoration: BoxDecoration(
+                color: AppColors.primarySurface,
+                borderRadius: AppRadius.sm,
+              ),
+              child: Text(
+                'NG',
+                style: AppTypography.caption.copyWith(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 10,
+                ),
+              ),
+            ),
+          ],
+        ),
+        _buildHealthStatusPill(),
+      ],
+    );
+  }
+
   Widget _buildHealthStatusPill() {
     if (_checkingHealth) {
       return const StatusBadge(
-        label: 'Connecting to AI Engine...',
+        label: 'Connecting...',
         variant: StatusBadgeVariant.neutral,
         icon: Icons.sync_rounded,
         isCompact: true,
@@ -308,7 +351,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
     if (_apiHealthy) {
       return const StatusBadge.genuine(
-        label: 'AI Verification Engine Online',
+        label: 'Engine Ready',
         isCompact: true,
       );
     }
@@ -319,7 +362,7 @@ class _HomeScreenState extends State<HomeScreen> {
       },
       borderRadius: AppRadius.pill,
       child: const StatusBadge.suspicious(
-        label: 'Engine Offline (Tap to Reconnect)',
+        label: 'Offline (Tap to Retry)',
         isCompact: true,
       ),
     );
