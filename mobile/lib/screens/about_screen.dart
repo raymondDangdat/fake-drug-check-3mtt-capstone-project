@@ -30,7 +30,6 @@ class AboutScreen extends StatelessWidget {
               // Project Intro Card
               AppCard(
                 backgroundColor: AppColors.primarySurface,
-                borderColor: AppColors.primaryBorder,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -219,12 +218,10 @@ class AboutScreen extends StatelessWidget {
   }) {
     final color = isGenuine ? AppColors.genuine : AppColors.suspicious;
     final surfaceColor = isGenuine ? AppColors.genuineSurface : AppColors.suspiciousSurface;
-    final borderColor = isGenuine ? AppColors.genuineBorder : AppColors.suspiciousBorder;
     final icon = isGenuine ? Icons.check_circle_rounded : Icons.warning_rounded;
     final textColor = isGenuine ? const Color(0xFF065F46) : const Color(0xFF991B1B);
 
     return AppCard(
-      borderColor: borderColor,
       backgroundColor: surfaceColor,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

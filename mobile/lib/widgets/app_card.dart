@@ -3,7 +3,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_radius.dart';
 import '../theme/app_spacing.dart';
 
-/// Clean clinical surface card with structured borders and optional header.
+/// Clean clinical surface card with soft elevation and no borders by default.
 class AppCard extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry padding;
@@ -30,10 +30,16 @@ class AppCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: backgroundColor ?? AppColors.surface,
         borderRadius: AppRadius.lg,
-        border: Border.all(
-          color: borderColor ?? AppColors.border,
-          width: 1.0,
-        ),
+        border: borderColor != null
+            ? Border.all(color: borderColor!, width: 1.0)
+            : null,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 12,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: child,
     );
@@ -53,7 +59,7 @@ class AppCard extends StatelessWidget {
   }
 }
 
-/// Highlighted action card (e.g. Primary Check / Scan trigger card).
+/// Highlighted action card (e.g. Primary Check / Scan trigger card) without outer border.
 class AppActionCard extends StatelessWidget {
   final IconData icon;
   final String title;
@@ -86,7 +92,13 @@ class AppActionCard extends StatelessWidget {
           padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
             borderRadius: AppRadius.lg,
-            border: Border.all(color: AppColors.border),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.03),
+                blurRadius: 12,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
           child: Row(
             children: [

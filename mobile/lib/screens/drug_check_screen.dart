@@ -454,7 +454,13 @@ class _DrugCheckScreenState extends State<DrugCheckScreen> {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: AppRadius.md,
-        border: Border.all(color: AppColors.border),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Row(
         children: [
@@ -469,11 +475,10 @@ class _DrugCheckScreenState extends State<DrugCheckScreen> {
             child: InkWell(
               onTap: _loadGenuineSample,
               child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 4),
+                padding: const EdgeInsets.symmetric(vertical: 6),
                 decoration: BoxDecoration(
                   color: AppColors.genuineSurface,
                   borderRadius: AppRadius.sm,
-                  border: Border.all(color: AppColors.genuineBorder),
                 ),
                 alignment: Alignment.center,
                 child: Text(
@@ -491,11 +496,10 @@ class _DrugCheckScreenState extends State<DrugCheckScreen> {
             child: InkWell(
               onTap: _loadSuspiciousSample,
               child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 4),
+                padding: const EdgeInsets.symmetric(vertical: 6),
                 decoration: BoxDecoration(
                   color: AppColors.suspiciousSurface,
                   borderRadius: AppRadius.sm,
-                  border: Border.all(color: AppColors.suspiciousBorder),
                 ),
                 alignment: Alignment.center,
                 child: Text(

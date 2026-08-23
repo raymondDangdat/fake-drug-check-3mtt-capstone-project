@@ -105,12 +105,10 @@ class ResultsScreen extends StatelessWidget {
     final isGenuine = result.isGenuine;
     final color = isGenuine ? AppColors.genuine : AppColors.suspicious;
     final surfaceColor = isGenuine ? AppColors.genuineSurface : AppColors.suspiciousSurface;
-    final borderColor = isGenuine ? AppColors.genuineBorder : AppColors.suspiciousBorder;
     final icon = isGenuine ? Icons.check_circle_rounded : Icons.warning_rounded;
 
     return AppCard(
       backgroundColor: surfaceColor,
-      borderColor: borderColor,
       padding: const EdgeInsets.all(22),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -231,9 +229,6 @@ class ResultsScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: isWarning ? AppColors.suspiciousSurface : AppColors.surfaceMuted,
         borderRadius: AppRadius.md,
-        border: Border.all(
-          color: isWarning ? AppColors.suspiciousBorder : AppColors.border,
-        ),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -257,7 +252,6 @@ class ResultsScreen extends StatelessWidget {
   Widget _buildRecommendationCard() {
     return AppCard(
       backgroundColor: AppColors.accentLight,
-      borderColor: const Color(0xFFBAE6FD),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
