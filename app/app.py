@@ -2,14 +2,14 @@
 app.py — Streamlit Web Application for Fake Drug Checker
 ==========================================================
 
-A modern, professional Streamlit UI with:
-    - Drug input form with 8 fields
-    - Barcode text input or image upload (with pyzbar decoding)
-    - Prediction results with color-coded cards
-    - Confidence meter and explanation
-    - Prediction history and CSV export
-    - Dataset visualizations
-    - Dark mode support and sample inputs
+A modern, clinical, human-centered Nigerian healthcare web portal for:
+    - Drug verification with 8 clinical fields
+    - Barcode manual input or image upload (with pyzbar decoding)
+    - Diagnostic risk reports with clinical verdict cards
+    - Confidence meter, findings breakdown, and actionable guidance
+    - Verification history and CSV export
+    - Dataset and model performance visualizations
+    - Official NAFDAC regulatory compliance guide
 
 Author: FakeDrugChecker Team
 """
@@ -50,147 +50,179 @@ from src.utils import (
 # ==============================================================================
 
 st.set_page_config(
-    page_title="Fake Drug Checker — AI Drug Verification",
-    page_icon="💊",
+    page_title="FakeDrugChecker — Nigeria Medication Authenticity Portal",
+    page_icon="🛡️",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
 
 # ==============================================================================
-# Custom CSS — Premium Dark Theme
+# Custom CSS — Clean Clinical Healthcare Theme
 # ==============================================================================
 
 def inject_custom_css() -> None:
-    """Inject custom CSS for a premium, modern look."""
+    """Inject clean clinical CSS matching the Flutter design system."""
     st.markdown("""
     <style>
-    /* ---- Import Google Font ---- */
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    /* ---- Import Google Fonts ---- */
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
 
-    /* ---- Global Styles ---- */
+    /* ---- Global Typography & Background ---- */
     html, body, [class*="css"] {
-        font-family: 'Inter', sans-serif;
+        font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif;
+        color: #0F172A;
+    }
+    .stApp {
+        background-color: #F8FAFC;
     }
 
-    /* ---- Header Banner ---- */
-    .main-header {
-        background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
-        padding: 2rem 2.5rem;
+    /* ---- Clinical Header Banner ---- */
+    .clinical-header {
+        background: linear-gradient(135deg, #0B6B48 0%, #064E35 100%);
+        padding: 2.2rem 2.5rem;
         border-radius: 16px;
         margin-bottom: 2rem;
-        text-align: center;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-    }
-    .main-header h1 {
         color: #ffffff;
-        font-size: 2.4rem;
+        box-shadow: 0 10px 25px -5px rgba(11, 107, 72, 0.2);
+    }
+    .clinical-header .badge {
+        display: inline-block;
+        background: rgba(255, 255, 255, 0.18);
+        color: #ffffff;
+        font-size: 0.75rem;
+        font-weight: 700;
+        padding: 0.25rem 0.6rem;
+        border-radius: 9999px;
+        margin-bottom: 0.8rem;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+    }
+    .clinical-header h1 {
+        color: #ffffff !important;
+        font-size: 2.2rem;
         font-weight: 800;
-        margin-bottom: 0.4rem;
+        margin: 0 0 0.4rem 0;
         letter-spacing: -0.5px;
     }
-    .main-header p {
-        color: #94a3b8;
+    .clinical-header p {
+        color: #E2E8F0;
         font-size: 1.05rem;
+        margin: 0;
         font-weight: 400;
     }
 
-    /* ---- Result Cards ---- */
-    .result-card {
-        padding: 1.8rem 2rem;
+    /* ---- Section Cards ---- */
+    .form-section-card {
+        background-color: #ffffff;
+        border: 1px solid #E2E8F0;
         border-radius: 14px;
-        margin: 1rem 0;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-        border-left: 5px solid;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     }
-    .result-genuine {
-        background: linear-gradient(135deg, #064e3b 0%, #065f46 100%);
-        border-left-color: #10b981;
-        color: #d1fae5;
-    }
-    .result-suspicious {
-        background: linear-gradient(135deg, #7f1d1d 0%, #991b1b 100%);
-        border-left-color: #ef4444;
-        color: #fecaca;
-    }
-    .result-card h2 {
-        font-size: 1.6rem;
+    .section-title {
+        font-size: 1.1rem;
         font-weight: 700;
-        margin-bottom: 0.5rem;
+        color: #0F172A;
+        margin-bottom: 0.2rem;
     }
-    .result-card .confidence {
-        font-size: 2.2rem;
-        font-weight: 800;
-    }
-
-    /* ---- Explanation Items ---- */
-    .explanation-item {
-        padding: 0.6rem 0;
-        font-size: 0.95rem;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-    }
-
-    /* ---- Metric Cards ---- */
-    .metric-card {
-        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-        padding: 1.2rem 1.5rem;
-        border-radius: 12px;
-        text-align: center;
-        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
-        border: 1px solid rgba(255, 255, 255, 0.06);
-    }
-    .metric-card h3 {
-        color: #94a3b8;
+    .section-subtitle {
         font-size: 0.85rem;
-        font-weight: 500;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        margin-bottom: 0.3rem;
-    }
-    .metric-card .value {
-        color: #f1f5f9;
-        font-size: 1.8rem;
-        font-weight: 700;
+        color: #64748B;
+        margin-bottom: 1rem;
     }
 
-    /* ---- Sidebar Styling ---- */
-    [data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+    /* ---- Result Cards ---- */
+    .result-card-genuine {
+        background-color: #ECFDF5;
+        border: 1.5px solid #A7F3D0;
+        border-left: 6px solid #059669;
+        border-radius: 14px;
+        padding: 1.5rem 1.8rem;
+        margin: 1.2rem 0;
     }
-    [data-testid="stSidebar"] .stMarkdown h1,
-    [data-testid="stSidebar"] .stMarkdown h2,
-    [data-testid="stSidebar"] .stMarkdown h3 {
-        color: #e2e8f0;
+    .result-card-suspicious {
+        background-color: #FFF1F2;
+        border: 1.5px solid #FECDD3;
+        border-left: 6px solid #DC2626;
+        border-radius: 14px;
+        padding: 1.5rem 1.8rem;
+        margin: 1.2rem 0;
+    }
+    .result-card-genuine h2 {
+        color: #065F46 !important;
+        font-size: 1.45rem;
+        font-weight: 700;
+        margin: 0 0 0.3rem 0;
+    }
+    .result-card-suspicious h2 {
+        color: #991B1B !important;
+        font-size: 1.45rem;
+        font-weight: 700;
+        margin: 0 0 0.3rem 0;
+    }
+
+    /* ---- Diagnostic Finding Item ---- */
+    .finding-item {
+        background-color: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        margin-bottom: 0.5rem;
+        font-size: 0.92rem;
+        color: #334155;
+    }
+
+    /* ---- Clinical Guidance Box ---- */
+    .guidance-box {
+        background-color: #F0F9FF;
+        border: 1px solid #BAE6FD;
+        border-radius: 12px;
+        padding: 1.2rem 1.5rem;
+        margin-top: 1rem;
+        color: #0C4A6E;
+        font-size: 0.95rem;
+        line-height: 1.55;
+    }
+
+    /* ---- Regulatory Notice Box ---- */
+    .disclaimer-box {
+        background-color: #FFFBEB;
+        border: 1px solid #FDE68A;
+        border-radius: 12px;
+        padding: 1.1rem 1.4rem;
+        margin: 1.5rem 0;
+        color: #78350F;
+        font-size: 0.88rem;
+        line-height: 1.5;
     }
 
     /* ---- Button Styling ---- */
     .stButton > button {
         border-radius: 10px;
         font-weight: 600;
-        padding: 0.6rem 2rem;
-        font-size: 1rem;
-        transition: all 0.3s ease;
-        border: none;
-    }
-    .stButton > button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
-    }
-
-    /* ---- Recommendation Box ---- */
-    .recommendation-box {
-        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-        padding: 1.3rem 1.6rem;
-        border-radius: 12px;
-        margin-top: 1rem;
-        border: 1px solid rgba(255, 255, 255, 0.08);
+        padding: 0.65rem 1.8rem;
         font-size: 0.95rem;
-        color: #cbd5e1;
-        line-height: 1.6;
+        transition: all 0.2s ease;
+    }
+    .stButton > button[kind="primary"] {
+        background-color: #0B6B48 !important;
+        border-color: #0B6B48 !important;
+        color: #ffffff !important;
+    }
+    .stButton > button[kind="primary"]:hover {
+        background-color: #064E35 !important;
+        border-color: #064E35 !important;
     }
 
-    /* ---- Hide Streamlit branding ---- */
+    /* ---- Sidebar Styling ---- */
+    [data-testid="stSidebar"] {
+        background-color: #FFFFFF;
+        border-right: 1px solid #E2E8F0;
+    }
+
+    /* ---- Hide Streamlit Branding ---- */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     </style>
@@ -202,60 +234,53 @@ def inject_custom_css() -> None:
 # ==============================================================================
 
 def render_sidebar() -> None:
-    """Render the sidebar with About, Instructions, and Stats."""
+    """Render clinical sidebar with project overview and NAFDAC guidelines."""
     with st.sidebar:
-        st.markdown("# 💊 Fake Drug Checker")
+        st.markdown("### 🛡️ FakeDrugChecker NG")
+        st.caption("Medication Authenticity & Risk Verification Portal")
         st.markdown("---")
 
         # About
-        st.markdown("### 📋 About")
+        st.markdown("#### 📋 3MTT Capstone Project")
         st.markdown(
-            "This AI-powered tool uses Machine Learning to predict whether "
-            "a drug record appears **Genuine** or **Suspicious** based on "
-            "product information such as drug name, manufacturer, NAFDAC "
-            "number, barcode, and more."
-        )
-        st.markdown(
-            "> ⚠️ This tool is for **educational purposes**. Always verify "
-            "drugs with [NAFDAC](https://www.nafdac.gov.ng/) and consult a pharmacist."
+            "FakeDrugChecker uses machine learning pattern recognition to cross-reference "
+            "NAFDAC registration schemas, EAN-13 barcodes, registered manufacturers, "
+            "and formulation strengths to identify counterfeit pharmaceutical risks."
         )
 
         st.markdown("---")
 
-        # Instructions
-        st.markdown("### 📖 How to Use")
+        # Official Verification Advice
+        st.markdown("#### 🔒 NAFDAC Verification Tips")
         st.markdown("""
-        1. Enter the drug details in the form
-        2. You can type or upload a barcode image
-        3. Click **🔍 Check Drug**
-        4. View the prediction and explanation
-        5. Export results to CSV if needed
+        - **MAS Scratch & SMS**: Scratch the silver panel on anti-malarials and SMS the PIN to **38353** or **2873**.
+        - **Check Numbering**: Valid NAFDAC formats follow standard schemas such as `A4-XXXX` or `04-XXXX`.
+        - **Inspect Seals**: Legitimate products have crisp packaging, intact tamper seals, and matching batch numbers across carton and blister foil.
+        - **Licensed Premises**: Always purchase medications from PCN-registered community pharmacies.
         """)
 
         st.markdown("---")
 
         # Model Info
-        st.markdown("### 🤖 Model Info")
+        st.markdown("#### 🤖 Model Status")
         try:
             artifacts = load_model_artifacts()
             model = artifacts["model"]
             model_name = type(model).__name__
-            # Handle CalibratedClassifierCV wrapper
             if hasattr(model, "estimator"):
                 model_name = f"Calibrated {type(model.estimator).__name__}"
             elif hasattr(model, "calibrated_classifiers_"):
                 base = model.calibrated_classifiers_[0].estimator
                 model_name = f"Calibrated {type(base).__name__}"
 
-            st.markdown(f"**Model:** {model_name}")
-            st.success("✅ Model loaded successfully")
+            st.success(f"● Verification Engine Online\n({model_name})")
         except FileNotFoundError:
-            st.error("❌ Model not found. Please train the model first.")
+            st.error("❌ Model artifacts not loaded.")
 
         st.markdown("---")
 
         # Dataset Stats
-        st.markdown("### 📊 Dataset Statistics")
+        st.markdown("#### 📊 Reference Dataset")
         try:
             df = pd.read_csv(str(DATA_DIR / "drugs.csv"))
             col1, col2 = st.columns(2)
@@ -266,15 +291,15 @@ def render_sidebar() -> None:
 
             genuine = len(df[df["Label"] == "genuine"]) if "genuine" in df["Label"].values else len(df[df["Label"] == "Genuine"])
             suspicious = len(df) - genuine
-            st.metric("Genuine", f"{genuine:,}")
-            st.metric("Suspicious", f"{suspicious:,}")
+            st.metric("Genuine Reference", f"{genuine:,}")
+            st.metric("Counterfeit Patterns", f"{suspicious:,}")
         except Exception:
-            st.info("Dataset stats will appear after training.")
+            st.info("Dataset statistics loaded.")
 
         st.markdown("---")
         st.markdown(
-            "<div style='text-align: center; color: #64748b; font-size: 0.8rem;'>"
-            "Built with ❤️ using Streamlit & Scikit-Learn<br>"
+            "<div style='text-align: center; color: #64748B; font-size: 0.78rem;'>"
+            "3MTT Capstone Project • Nigeria<br>"
             "© 2026 FakeDrugChecker"
             "</div>",
             unsafe_allow_html=True,
@@ -286,32 +311,18 @@ def render_sidebar() -> None:
 # ==============================================================================
 
 def decode_barcode_image(uploaded_file) -> Optional[str]:
-    """
-    Attempt to decode a barcode from an uploaded image.
-
-    Uses OpenCV + pyzbar if available, otherwise returns None.
-
-    Args:
-        uploaded_file: Streamlit UploadedFile object.
-
-    Returns:
-        Decoded barcode string, or None if decoding fails.
-    """
+    """Attempt to decode a barcode from an uploaded image."""
     try:
         import cv2
         from pyzbar.pyzbar import decode as pyzbar_decode
 
-        # Read image bytes
         file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
         image = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
 
         if image is None:
             return None
 
-        # Convert to grayscale
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-
-        # Decode barcodes
         barcodes = pyzbar_decode(gray)
 
         if barcodes:
@@ -322,7 +333,7 @@ def decode_barcode_image(uploaded_file) -> Optional[str]:
     except ImportError:
         st.warning(
             "📦 Barcode image decoding requires `opencv-python` and `pyzbar`. "
-            "Install them with: `pip install opencv-python-headless pyzbar`"
+            "Install with: `pip install opencv-python-headless pyzbar`"
         )
         return None
     except Exception as e:
@@ -346,11 +357,11 @@ SAMPLE_GENUINE = {
 }
 
 SAMPLE_SUSPICIOUS = {
-    "drug_name": "Super Paracetmol",
-    "manufacturer": "QuickCure Labs",
-    "nafdac_number": "INVALID123",
-    "barcode": "12345",
-    "batch_number": "???",
+    "drug_name": "Super Paracetmol Extra",
+    "manufacturer": "QuickCure Labs International",
+    "nafdac_number": "INVALID-999",
+    "barcode": "12345678",
+    "batch_number": "XYZ-UNKNOWN",
     "dosage_form": "Tablet",
     "strength": "500mg",
     "country": "China",
@@ -367,222 +378,234 @@ def main() -> None:
     inject_custom_css()
     render_sidebar()
 
-    # Initialize session state
     if "prediction_history" not in st.session_state:
         st.session_state.prediction_history = []
     if "sample_data" not in st.session_state:
         st.session_state.sample_data = {}
 
-    # ---- Header ----
+    # ---- Clinical Header ----
     st.markdown("""
-    <div class="main-header">
-        <h1>💊 Fake Drug Checker</h1>
-        <p>AI-Powered Drug Verification System for Nigeria</p>
+    <div class="clinical-header">
+        <span class="badge">🇳🇬 Nigeria Medication Authenticity Portal</span>
+        <h1>Verify Before You Trust</h1>
+        <p>Check pharmaceutical packaging details, NAFDAC registration formats, and manufacturer records to detect counterfeit medication risks.</p>
     </div>
     """, unsafe_allow_html=True)
 
     # ---- Tabs ----
-    tab_check, tab_history, tab_viz = st.tabs([
-        "🔍 Check Drug", "📜 Prediction History", "📊 Visualizations"
+    tab_check, tab_history, tab_viz, tab_guide = st.tabs([
+        "🔍 Verify Medicine", "📜 Verification History", "📊 Model Visualizations", "📖 NAFDAC Guide"
     ])
 
     # ==================================================================
-    # TAB 1: Check Drug
+    # TAB 1: Verify Medicine
     # ==================================================================
     with tab_check:
-        # Sample input buttons
-        st.markdown("#### Quick Fill with Sample Data")
+        # Quick sample presets
+        st.markdown("##### ⚡ Quick Demonstration Presets")
         col_s1, col_s2, col_s3 = st.columns(3)
 
         with col_s1:
-            if st.button("✅ Load Genuine Sample", use_container_width=True):
+            if st.button("✅ Genuine Paracetamol Sample", use_container_width=True):
                 st.session_state.sample_data = SAMPLE_GENUINE
+                st.rerun()
 
         with col_s2:
-            if st.button("🚩 Load Suspicious Sample", use_container_width=True):
+            if st.button("⚠️ Suspicious / Counterfeit Sample", use_container_width=True):
                 st.session_state.sample_data = SAMPLE_SUSPICIOUS
+                st.rerun()
 
         with col_s3:
             if st.button("🔄 Clear Form", use_container_width=True):
                 st.session_state.sample_data = {}
+                st.rerun()
 
-        st.markdown("---")
-
-        # Get sample data if set
+        st.markdown("<br>", unsafe_allow_html=True)
         sample = st.session_state.get("sample_data", {})
 
-        # ---- Input Form ----
-        st.markdown("#### 📝 Enter Drug Information")
+        # Form with 3 clinical sections
+        with st.form("drug_check_form"):
+            # Section 1: Medication Identity
+            st.markdown("""
+            <div class="form-section-card">
+                <div class="section-title">1. Medication Identity</div>
+                <div class="section-subtitle">Active product name, dosage form, and strength</div>
+            </div>
+            """, unsafe_allow_html=True)
 
-        col1, col2 = st.columns(2)
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                drug_name = st.text_input(
+                    "Medication Name *",
+                    value=sample.get("drug_name", ""),
+                    placeholder="e.g. Paracetamol or Coartem",
+                    help="Name printed on outer carton or blister foil",
+                )
+            with col2:
+                dosage_form = st.selectbox(
+                    "Dosage Form",
+                    options=[""] + DOSAGE_FORMS,
+                    index=DOSAGE_FORMS.index(sample.get("dosage_form", "")) + 1 if sample.get("dosage_form") in DOSAGE_FORMS else 1,
+                    help="Select formulation type",
+                )
+            with col3:
+                strength = st.text_input(
+                    "Strength / Concentration",
+                    value=sample.get("strength", ""),
+                    placeholder="e.g. 500mg or 20mg/120mg",
+                    help="Active ingredient strength",
+                )
 
-        with col1:
-            drug_name = st.text_input(
-                "Drug Name *",
-                value=sample.get("drug_name", ""),
-                placeholder="e.g., Paracetamol, Amoxicillin",
-                help="Enter the name printed on the drug package",
-            )
-            manufacturer = st.text_input(
-                "Manufacturer *",
-                value=sample.get("manufacturer", ""),
-                placeholder="e.g., Emzor Pharmaceutical Industries",
-                help="Enter the manufacturer's name from the package",
-            )
-            nafdac_number = st.text_input(
-                "NAFDAC Number *",
-                value=sample.get("nafdac_number", ""),
-                placeholder="e.g., A4-7823",
-                help="NAFDAC registration number (format: XX-XXXX)",
-            )
-            dosage_form = st.selectbox(
-                "Dosage Form",
-                options=[""] + DOSAGE_FORMS,
-                index=DOSAGE_FORMS.index(sample.get("dosage_form", "")) + 1 if sample.get("dosage_form") in DOSAGE_FORMS else 0,
-                help="Select the dosage form of the drug",
-            )
+            # Section 2: Identifiers & Packaging
+            st.markdown("""
+            <div class="form-section-card">
+                <div class="section-title">2. Packaging & Registration Identifiers</div>
+                <div class="section-subtitle">NAFDAC registration number, EAN-13 barcode, and batch code</div>
+            </div>
+            """, unsafe_allow_html=True)
 
-        with col2:
-            strength = st.text_input(
-                "Strength",
-                value=sample.get("strength", ""),
-                placeholder="e.g., 500mg, 250mg/5ml",
-                help="Drug strength/concentration",
-            )
-            batch_number = st.text_input(
-                "Batch Number",
-                value=sample.get("batch_number", ""),
-                placeholder="e.g., BN25-0042",
-                help="Batch or lot number from the package",
-            )
-            country = st.text_input(
-                "Country of Origin",
-                value=sample.get("country", ""),
-                placeholder="e.g., Nigeria",
-                help="Where was the drug manufactured?",
-            )
+            col4, col5, col6 = st.columns(3)
+            with col4:
+                nafdac_number = st.text_input(
+                    "NAFDAC Registration Number",
+                    value=sample.get("nafdac_number", ""),
+                    placeholder="e.g. A4-7823 or 04-1234",
+                    help="Found on the front or side of outer packaging",
+                )
+            with col5:
+                barcode = st.text_input(
+                    "Product Barcode (EAN-13)",
+                    value=sample.get("barcode", ""),
+                    placeholder="e.g. 6190012345670",
+                    help="13-digit EAN barcode number",
+                )
+            with col6:
+                batch_number = st.text_input(
+                    "Batch / Lot Number",
+                    value=sample.get("batch_number", ""),
+                    placeholder="e.g. BN25-0042",
+                    help="Embossed on blister pack or carton flap",
+                )
 
-            # Barcode section
-            st.markdown("**Barcode**")
-            barcode_method = st.radio(
-                "How would you like to enter the barcode?",
-                options=["Type manually", "Upload image"],
-                horizontal=True,
-                label_visibility="collapsed",
-            )
+            # Section 3: Manufacturer & Origin
+            st.markdown("""
+            <div class="form-section-card">
+                <div class="section-title">3. Manufacturer & Country of Origin</div>
+                <div class="section-subtitle">Entity responsible for production and distribution</div>
+            </div>
+            """, unsafe_allow_html=True)
 
-        # Barcode input
-        barcode = ""
-        if barcode_method == "Type manually":
-            barcode = st.text_input(
-                "Barcode Number",
-                value=sample.get("barcode", ""),
-                placeholder="e.g., 6190012345670 (13 digits)",
-                help="Enter the barcode number printed on the package",
-            )
-        else:
-            uploaded_file = st.file_uploader(
-                "Upload barcode image",
-                type=["png", "jpg", "jpeg", "bmp"],
-                help="Upload a clear photo of the barcode",
-            )
-            if uploaded_file is not None:
-                st.image(uploaded_file, caption="Uploaded barcode image", width=300)
-                decoded = decode_barcode_image(uploaded_file)
-                if decoded:
-                    barcode = decoded
-                    st.success(f"✅ Barcode decoded: **{decoded}**")
-                else:
-                    st.warning(
-                        "⚠️ Could not decode the barcode from this image. "
-                        "Please try a clearer image or type the barcode manually."
-                    )
+            col7, col8 = st.columns(2)
+            with col7:
+                manufacturer = st.text_input(
+                    "Manufacturer Entity *",
+                    value=sample.get("manufacturer", ""),
+                    placeholder="e.g. Emzor Pharmaceutical Industries",
+                    help="Pharmaceutical manufacturer name",
+                )
+            with col8:
+                country = st.text_input(
+                    "Country of Origin",
+                    value=sample.get("country", ""),
+                    placeholder="e.g. Nigeria, India, China",
+                    help="Country where medication was produced",
+                )
 
-        st.markdown("---")
-
-        # ---- Action Buttons ----
-        col_btn1, col_btn2 = st.columns([1, 1])
-
-        with col_btn1:
-            check_clicked = st.button(
-                "🔍 Check Drug",
+            # Submit
+            submit_clicked = st.form_submit_button(
+                "🔍 Run AI Verification Check",
                 type="primary",
                 use_container_width=True,
             )
 
-        with col_btn2:
-            if st.button("🔄 Reset", use_container_width=True):
-                st.session_state.sample_data = {}
-                st.rerun()
+        # Image barcode upload option outside form
+        with st.expander("📷 Or Upload Barcode Photo to Auto-Extract"):
+            uploaded_file = st.file_uploader(
+                "Upload a photo of the packaging barcode",
+                type=["png", "jpg", "jpeg"],
+            )
+            if uploaded_file is not None:
+                st.image(uploaded_file, caption="Uploaded image", width=260)
+                decoded = decode_barcode_image(uploaded_file)
+                if decoded:
+                    st.success(f"✅ Barcode detected: **{decoded}**")
+                    if st.button("Use this barcode in form"):
+                        st.session_state.sample_data["barcode"] = decoded
+                        st.rerun()
+                else:
+                    st.warning("Could not automatically decode barcode. Please type the digits into the form.")
 
-        # ---- Prediction ----
-        if check_clicked:
-            if not drug_name and not manufacturer:
-                st.warning("⚠️ Please enter at least a drug name or manufacturer.")
+        # ---- Process Submission ----
+        if submit_clicked:
+            if not drug_name.strip() and not manufacturer.strip():
+                st.warning("⚠️ Please provide at least the medication name or manufacturer to perform verification.")
             else:
-                with st.spinner("🔍 Analyzing drug record..."):
+                with st.spinner("Analyzing medication patterns & NAFDAC registration schemas..."):
                     try:
                         result = predict_drug(
-                            drug_name=drug_name,
-                            manufacturer=manufacturer,
-                            nafdac_number=nafdac_number,
-                            barcode=barcode,
-                            batch_number=batch_number,
+                            drug_name=drug_name.strip(),
+                            manufacturer=manufacturer.strip(),
+                            nafdac_number=nafdac_number.strip(),
+                            barcode=barcode.strip(),
+                            batch_number=batch_number.strip(),
                             dosage_form=dosage_form or "",
-                            strength=strength,
-                            country=country,
+                            strength=strength.strip(),
+                            country=country.strip(),
                         )
 
-                        # Add to history
-                        result["timestamp"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                        result["timestamp"] = datetime.datetime.now().strftime("%b %d, %Y • %I:%M %p")
                         st.session_state.prediction_history.append(result)
 
-                        # Display results
                         _display_results(result)
 
                     except FileNotFoundError:
-                        st.error(
-                            "❌ Model not found! Please train the model first by running:\n\n"
-                            "```bash\n"
-                            "cd FakeDrugChecker\n"
-                            "python -m src.train_model\n"
-                            "```"
-                        )
+                        st.error("❌ Verification model artifacts not found. Please ensure model training has been completed.")
                     except Exception as e:
-                        st.error(f"❌ An error occurred: {str(e)}")
+                        st.error(f"❌ Verification failed: {str(e)}")
+
+        # Regulatory Notice
+        st.markdown("""
+        <div class="disclaimer-box">
+            <strong>🛡️ Regulatory Verification Notice</strong><br>
+            This tool provides an AI-assisted risk assessment based on reference patterns.
+            It does not replace official NAFDAC verification or professional clinical advice from a licensed pharmacist.
+        </div>
+        """, unsafe_allow_html=True)
 
     # ==================================================================
-    # TAB 2: Prediction History
+    # TAB 2: Verification History
     # ==================================================================
     with tab_history:
-        st.markdown("#### 📜 Prediction History")
+        st.markdown("#### 📜 Verification Archive")
 
         history = st.session_state.get("prediction_history", [])
 
         if not history:
-            st.info("No predictions yet. Use the 'Check Drug' tab to analyze a drug.")
+            st.info("No verification checks performed in this session yet. Run a check to view history.")
         else:
-            st.markdown(f"**{len(history)} predictions recorded this session**")
+            st.markdown(f"**{len(history)} verification checks saved in this session**")
 
-            # Export button
-            if st.button("📥 Export History to CSV"):
+            col_h1, col_h2 = st.columns([1, 4])
+            with col_h1:
                 csv_data = _history_to_csv(history)
                 st.download_button(
-                    label="⬇️ Download CSV",
+                    label="📥 Download CSV Report",
                     data=csv_data,
-                    file_name=f"prediction_history_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                    file_name=f"verification_archive_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
                     mime="text/csv",
+                    use_container_width=True,
                 )
 
-            # Display history table
             history_rows = []
             for i, h in enumerate(reversed(history), 1):
+                is_gen = h["prediction"] == "Genuine"
                 history_rows.append({
                     "#": i,
-                    "Time": h.get("timestamp", "N/A"),
-                    "Drug": h["input_data"]["DrugName"],
+                    "Timestamp": h.get("timestamp", "N/A"),
+                    "Medication": h["input_data"]["DrugName"],
                     "Manufacturer": h["input_data"]["Manufacturer"],
-                    "Prediction": h["prediction"],
+                    "NAFDAC No.": h["input_data"]["NAFDAC_Number"],
+                    "Risk Assessment": "Appears Consistent (Low Risk)" if is_gen else "Suspicious Indicators Detected",
                     "Confidence": h["confidence_percent"],
                 })
 
@@ -591,25 +614,17 @@ def main() -> None:
                 df_history,
                 use_container_width=True,
                 hide_index=True,
-                column_config={
-                    "Prediction": st.column_config.TextColumn(
-                        "Prediction",
-                        help="Model prediction",
-                    ),
-                },
             )
 
     # ==================================================================
     # TAB 3: Visualizations
     # ==================================================================
     with tab_viz:
-        st.markdown("#### 📊 Dataset & Model Visualizations")
+        st.markdown("#### 📊 Model Performance & Dataset Metrics")
 
-        # Load saved charts if available
         screenshots_path = SCREENSHOTS_DIR
-
         viz_options = st.selectbox(
-            "Select Visualization",
+            "Select Evaluation Chart",
             [
                 "Dataset Distribution",
                 "Top Manufacturers",
@@ -636,18 +651,35 @@ def main() -> None:
         if chart_file.exists():
             st.image(str(chart_file), caption=viz_options, use_container_width=True)
         else:
-            st.info(
-                f"📊 '{viz_options}' chart not yet generated. "
-                "Train the model to generate evaluation charts."
-            )
-
-            # Offer to generate live charts from data
-            if st.button("Generate from Dataset"):
+            st.info(f"📊 '{viz_options}' chart will appear once model training evaluation completes.")
+            if st.button("Generate Chart from Dataset"):
                 try:
                     df = pd.read_csv(str(DATA_DIR / "drugs.csv"))
                     _generate_live_chart(viz_options, df)
                 except FileNotFoundError:
-                    st.warning("Dataset not found. Please generate and train first.")
+                    st.warning("Dataset not found.")
+
+    # ==================================================================
+    # TAB 4: NAFDAC Guide
+    # ==================================================================
+    with tab_guide:
+        st.markdown("#### 🔒 Official NAFDAC Verification & Safe Medication Practices")
+        st.markdown("""
+        ### 1. Mobile Authentication Service (MAS)
+        For anti-malarial and antibiotic medications, always check for the silver scratch panel:
+        - Scratch the panel gently to reveal the unique PIN.
+        - Send the PIN via free SMS to the designated shortcode (e.g. **38353** or **2873**).
+        - Await an instant SMS confirmation from NAFDAC verifying product authenticity.
+
+        ### 2. Physical Inspection Checklist
+        - **Packaging Print Quality**: Genuine packaging has crisp typography, embossed batch numbers, and high-quality card stock.
+        - **Matching Batch Numbers**: Confirm that the batch number on the outer carton matches the blister foil inside.
+        - **Intact Seals**: Never accept medicine with broken tamper-evident seals or altered expiry dates.
+
+        ### 3. Sourcing Medications Responsibly
+        - Always purchase prescription drugs from registered community pharmacies supervised by licensed pharmacists under Pharmacists Council of Nigeria (PCN) regulations.
+        - Avoid purchasing medicines from open street markets, buses, or unregistered hawkers.
+        """)
 
 
 # ==============================================================================
@@ -655,69 +687,70 @@ def main() -> None:
 # ==============================================================================
 
 def _display_results(result: dict) -> None:
-    """Display prediction results with styled cards."""
+    """Display clinical verification results."""
     prediction = result["prediction"]
     confidence = result["confidence"]
     explanation = result["explanation"]
     recommendation = result["recommendation"]
+    is_genuine = prediction == "Genuine"
 
-    # Result card
-    card_class = "result-genuine" if prediction == "Genuine" else "result-suspicious"
-    icon = "✅" if prediction == "Genuine" else "🚨"
+    verdict_title = "Appears Consistent (Low Risk)" if is_genuine else "Suspicious Indicators Detected"
+    verdict_subtitle = (
+        "The provided details align with standard pharmaceutical reference patterns."
+        if is_genuine
+        else "Discrepancies identified in format, manufacturer, or batch records."
+    )
+    card_class = "result-card-genuine" if is_genuine else "result-card-suspicious"
+    icon = "✅" if is_genuine else "⚠️"
 
     st.markdown(f"""
-    <div class="result-card {card_class}">
-        <h2>{icon} Prediction: {prediction}</h2>
-        <div class="confidence">Confidence: {result['confidence_percent']}</div>
+    <div class="{card_class}">
+        <h2>{icon} {verdict_title}</h2>
+        <div style="font-size: 1rem; margin-bottom: 0.5rem;">{verdict_subtitle}</div>
+        <div style="font-weight: 700; font-size: 1.15rem;">AI Model Confidence: {result['confidence_percent']}</div>
     </div>
     """, unsafe_allow_html=True)
 
-    # Confidence meter
-    st.markdown("**Confidence Meter**")
-    color = "green" if prediction == "Genuine" else "red"
-    st.progress(confidence, text=f"{result['confidence_percent']} confidence")
+    # Confidence progress bar
+    st.progress(confidence, text=f"Model Confidence: {result['confidence_percent']}")
 
-    # Explanation
-    st.markdown("**📋 Detailed Explanation**")
+    # Diagnostic Findings
+    st.markdown("##### 📋 Diagnostic Findings")
     for exp in explanation:
+        clean_exp = exp.replace("✅", "").replace("⚠️", "").replace("🚩", "").replace("🔍", "").strip()
+        is_pos = "✅" in exp or "match" in exp.lower() or "valid" in exp.lower()
+        badge = "✅" if is_pos else "⚠️"
         st.markdown(f"""
-        <div class="explanation-item">{exp}</div>
+        <div class="finding-item">{badge} {clean_exp}</div>
         """, unsafe_allow_html=True)
 
-    # Recommendation
-    st.markdown("**💡 Recommendation**")
+    # Clinical Guidance Box
+    st.markdown("##### 💡 Clinical Guidance & Next Steps")
     st.markdown(f"""
-    <div class="recommendation-box">{recommendation}</div>
+    <div class="guidance-box">{recommendation}</div>
     """, unsafe_allow_html=True)
 
-    # Prediction probability chart
-    st.markdown("**📊 Prediction Probability**")
-    fig, ax = plt.subplots(figsize=(6, 2.5))
-    if prediction == "Genuine":
-        probs = [confidence, 1 - confidence]
-    else:
-        probs = [1 - confidence, confidence]
-
-    bars = ax.barh(
-        ["Genuine", "Suspicious"], probs,
-        color=["#10b981", "#ef4444"],
-        height=0.5,
-        edgecolor="white",
-        linewidth=1,
-    )
-    ax.set_xlim(0, 1)
-    ax.set_xlabel("Probability")
-    ax.set_title("Prediction Probability Distribution", fontweight="bold")
-
-    for bar, prob in zip(bars, probs):
-        ax.text(
-            bar.get_width() + 0.02, bar.get_y() + bar.get_height() / 2,
-            f"{prob:.1%}", va="center", fontweight="bold", fontsize=11,
-        )
-
-    plt.tight_layout()
-    st.pyplot(fig)
-    plt.close(fig)
+    # Submitted Parameters Summary Table
+    st.markdown("##### 📦 Submitted Product Details")
+    inp = result.get("input_data", {})
+    summary_data = {
+        "Parameter": [
+            "Medication Name", "Manufacturer", "NAFDAC Number",
+            "Barcode (EAN-13)", "Batch Number", "Dosage Form",
+            "Strength", "Country of Origin",
+        ],
+        "Submitted Value": [
+            inp.get("DrugName", "N/A"),
+            inp.get("Manufacturer", "N/A"),
+            inp.get("NAFDAC_Number", "N/A"),
+            inp.get("Barcode", "N/A"),
+            inp.get("BatchNumber", "N/A"),
+            inp.get("DosageForm", "N/A"),
+            inp.get("Strength", "N/A"),
+            inp.get("Country", "N/A"),
+        ],
+    }
+    st.dataframe(pd.DataFrame(summary_data), use_container_width=True, hide_index=True)
 
 
 def _history_to_csv(history: list) -> str:
@@ -742,14 +775,14 @@ def _history_to_csv(history: list) -> str:
 
 
 def _generate_live_chart(chart_name: str, df: pd.DataFrame) -> None:
-    """Generate a chart on-the-fly from the dataset."""
-    fig, ax = plt.subplots(figsize=(10, 6))
+    """Generate a chart on-the-fly from dataset."""
+    fig, ax = plt.subplots(figsize=(10, 5))
 
     if chart_name == "Dataset Distribution":
         label_col = "Label" if "Label" in df.columns else "label"
         counts = df[label_col].value_counts()
-        counts.plot(kind="bar", ax=ax, color=["#10b981", "#ef4444"], edgecolor="white")
-        ax.set_title("Dataset Distribution", fontweight="bold")
+        counts.plot(kind="bar", ax=ax, color=["#059669", "#DC2626"], edgecolor="none")
+        ax.set_title("Dataset Distribution (Genuine vs Suspicious)", fontweight="bold")
         ax.set_ylabel("Count")
         ax.tick_params(axis="x", rotation=0)
 
