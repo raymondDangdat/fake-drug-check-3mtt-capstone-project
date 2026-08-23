@@ -1,14 +1,26 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:provider/provider.dart';
-
 import '../services/api_service.dart';
 import '../services/history_service.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_radius.dart';
+import '../theme/app_spacing.dart';
+import '../theme/app_typography.dart';
+import '../widgets/app_button.dart';
+import '../widgets/app_card.dart';
+import '../widgets/app_dropdown.dart';
+import '../widgets/app_text_field.dart';
+import '../widgets/disclaimer_card.dart';
+import '../widgets/loading_indicator.dart';
+import '../widgets/responsive_layout.dart';
+import '../widgets/section_header.dart';
+import 'barcode_scanner_sheet.dart';
 
-/// Drug check form screen with input fields and barcode scanner.
+/// Drug input verification form screen with 3 clinical sections & desktop split-view.
 class DrugCheckScreen extends StatefulWidget {
-  const DrugCheckScreen({super.key});
+  final Map<String, dynamic>? initialArgs;
+
+  const DrugCheckScreen({super.key, this.initialArgs});
 
   @override
   State<DrugCheckScreen> createState() => _DrugCheckScreenState();
@@ -29,14 +41,55 @@ class _DrugCheckScreenState extends State<DrugCheckScreen> {
   bool _isLoading = false;
 
   static const _dosageForms = [
-    'Tablet', 'Capsule', 'Syrup', 'Suspension', 'Injection',
-    'Cream', 'Ointment', 'Drops', 'Powder', 'Sachet',
+    'Tablet',
+    'Capsule',
+    'Syrup',
+    'Suspension',
+    'Injection',
+    'Cream',
+    'Ointment',
+    'Drops',
+    'Powder',
+    'Sachet',
   ];
 
   static const _countries = [
-    'Nigeria', 'China', 'India', 'Ghana', 'Pakistan',
-    'South Africa', 'Kenya', 'United Kingdom', 'United States', 'Unknown',
+    'Nigeria',
+    'India',
+    'China',
+    'Ghana',
+    'United Kingdom',
+    'United States',
+    'Pakistan',
+    'South Africa',
+    'Kenya',
+    'Unknown',
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _handleInitialArguments();
+    });
+  }
+
+  void _handleInitialArguments() {
+    final args = widget.initialArgs ??
+        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+
+    if (args != null) {
+      if (args['barcode'] != null) {
+        setState(() {
+          _barcodeController.text = args['barcode'] as String;
+        });
+      } else if (args['preset'] == 'genuine') {
+        _loadGenuineSample();
+      } else if (args['preset'] == 'suspicious') {
+        _loadSuspiciousSample();
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -50,62 +103,89 @@ class _DrugCheckScreenState extends State<DrugCheckScreen> {
   }
 
   void _loadGenuineSample() {
-    _drugNameController.text = 'Paracetamol';
-    _manufacturerController.text = 'Emzor Pharmaceutical Industries';
-    _nafdacController.text = 'A4-7823';
-    _barcodeController.text = '6190012345670';
-    _batchController.text = 'BN25-0042';
-    _strengthController.text = '500mg';
     setState(() {
+      _drugNameController.text = 'Paracetamol';
+      _manufacturerController.text = 'Emzor Pharmaceutical Industries';
+      _nafdacController.text = 'A4-7823';
+      _barcodeController.text = '6190012345670';
+      _batchController.text = 'BN25-0042';
+      _strengthController.text = '500mg';
       _selectedDosageForm = 'Tablet';
       _selectedCountry = 'Nigeria';
     });
   }
 
   void _loadSuspiciousSample() {
-    _drugNameController.text = 'Super Paracetmol';
-    _manufacturerController.text = 'QuickCure Labs';
-    _nafdacController.text = 'INVALID123';
-    _barcodeController.text = '12345';
-    _batchController.text = '???';
-    _strengthController.text = '500mg';
     setState(() {
+      _drugNameController.text = 'Super Paracetmol Extra';
+      _manufacturerController.text = 'QuickCure Labs International';
+      _nafdacController.text = 'INVALID-999';
+      _barcodeController.text = '12345678';
+      _batchController.text = 'XYZ-UNKNOWN';
+      _strengthController.text = '500mg';
       _selectedDosageForm = 'Tablet';
       _selectedCountry = 'China';
     });
   }
 
   void _clearForm() {
-    _drugNameController.clear();
-    _manufacturerController.clear();
-    _nafdacController.clear();
-    _barcodeController.clear();
-    _batchController.clear();
-    _strengthController.clear();
     setState(() {
+      _drugNameController.clear();
+      _manufacturerController.clear();
+      _nafdacController.clear();
+      _barcodeController.clear();
+      _batchController.clear();
+      _strengthController.clear();
       _selectedDosageForm = 'Tablet';
       _selectedCountry = 'Nigeria';
     });
   }
 
   Future<void> _openBarcodeScanner() async {
-    final result = await Navigator.push<String>(
+    final scannedCode = await Navigator.push<String>(
       context,
-      MaterialPageRoute(
-        builder: (context) => const _BarcodeScannerPage(),
-      ),
+      MaterialPageRoute(builder: (context) => const BarcodeScannerSheet()),
     );
-    if (result != null && mounted) {
+
+    if (scannedCode != null && scannedCode.isNotEmpty && mounted) {
       setState(() {
-        _barcodeController.text = result;
+        _barcodeController.text = scannedCode;
       });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Barcode detected: $scannedCode'),
+          duration: const Duration(seconds: 2),
+        ),
+      );
     }
   }
 
-  Future<void> _submitCheck() async {
-    if (!_formKey.currentState!.validate()) return;
+  Future<void> _submitVerification() async {
+    if (!_formKey.currentState!.validate()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please complete the required medication fields.'),
+        ),
+      );
+      return;
+    }
 
     setState(() => _isLoading = true);
+
+    // Show step-by-step loading modal
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => const PopScope(
+        canPop: false,
+        child: Center(
+          child: MaxWidthContainer(
+            maxWidth: 420,
+            child: LoadingIndicator(),
+          ),
+        ),
+      ),
+    );
 
     final apiService = context.read<ApiService>();
     final historyService = context.read<HistoryService>();
@@ -122,19 +202,26 @@ class _DrugCheckScreenState extends State<DrugCheckScreen> {
         country: _selectedCountry,
       );
 
-      // Save to history
+      // Save to local history
       await historyService.saveResult(result);
 
       if (mounted) {
-        Navigator.pushNamed(context, '/results', arguments: result);
+        Navigator.pop(context); // Dismiss loading dialog
+        Navigator.pushReplacementNamed(
+          context,
+          '/results',
+          arguments: result,
+        );
       }
     } on ApiException catch (e) {
       if (mounted) {
+        Navigator.pop(context); // Dismiss loading dialog
         _showErrorSnackBar(e.message);
       }
-    } catch (e) {
+    } catch (_) {
       if (mounted) {
-        _showErrorSnackBar('An unexpected error occurred. Please try again.');
+        Navigator.pop(context); // Dismiss loading dialog
+        _showErrorSnackBar('Verification timed out. Please check your internet connection.');
       }
     } finally {
       if (mounted) {
@@ -148,17 +235,12 @@ class _DrugCheckScreenState extends State<DrugCheckScreen> {
       SnackBar(
         content: Row(
           children: [
-            const Icon(Icons.error_outline, color: Colors.white, size: 18),
+            const Icon(Icons.info_outline, color: Colors.white, size: 18),
             const SizedBox(width: 8),
-            Expanded(
-              child: Text(message, style: GoogleFonts.inter(fontSize: 13)),
-            ),
+            Expanded(child: Text(message)),
           ],
         ),
-        backgroundColor: const Color(0xFFFF1744),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        margin: const EdgeInsets.all(16),
+        backgroundColor: AppColors.suspicious,
       ),
     );
   }
@@ -166,366 +248,359 @@ class _DrugCheckScreenState extends State<DrugCheckScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Check Drug'),
+        title: const Text('Medication Verification Form'),
         actions: [
           IconButton(
             onPressed: _clearForm,
-            icon: const Icon(Icons.clear_all_rounded, size: 22),
-            tooltip: 'Clear form',
+            icon: const Icon(Icons.refresh_rounded),
+            tooltip: 'Reset form',
           ),
         ],
       ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xFF0D2137), Color(0xFF0A1628)],
+      body: SingleChildScrollView(
+        padding: ResponsiveLayout.isDesktop(context)
+            ? AppSpacing.screenPaddingDesktop
+            : AppSpacing.screenPaddingMobile,
+        child: MaxWidthContainer(
+          child: ResponsiveLayout(
+            mobile: _buildFormContent(),
+            desktop: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Left Column: The 3-section Form
+                Expanded(
+                  flex: 6,
+                  child: _buildFormContent(),
+                ),
+                const SizedBox(width: 32),
+
+                // Right Column: Guidelines & Presets
+                Expanded(
+                  flex: 4,
+                  child: _buildDesktopSidebar(),
+                ),
+              ],
+            ),
           ),
         ),
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      ),
+    );
+  }
+
+  Widget _buildFormContent() {
+    return Form(
+      key: _formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Quick Sample Presets (Mobile View)
+          if (ResponsiveLayout.isMobile(context)) ...[
+            _buildSampleButtonsBar(),
+            const SizedBox(height: 18),
+          ],
+
+          // Section 1: Medication Identity
+          AppCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SectionHeader(
+                  stepNumber: '1',
+                  title: 'Medication Identity',
+                  subtitle: 'Active product name, form, and strength',
+                ),
+                const SizedBox(height: 14),
+                AppTextField(
+                  controller: _drugNameController,
+                  label: 'Medication / Brand Name *',
+                  hint: 'e.g. Paracetamol or Coartem',
+                  prefixIcon: Icons.medication_rounded,
+                  validator: (v) =>
+                      (v == null || v.trim().isEmpty) ? 'Medication name is required' : null,
+                ),
+                const SizedBox(height: 14),
+                Row(
+                  children: [
+                    Expanded(
+                      child: AppDropdown<String>(
+                        label: 'Dosage Form',
+                        value: _selectedDosageForm,
+                        items: _dosageForms,
+                        itemLabel: (f) => f,
+                        prefixIcon: Icons.local_pharmacy_rounded,
+                        onChanged: (v) => setState(() => _selectedDosageForm = v!),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: AppTextField(
+                        controller: _strengthController,
+                        label: 'Strength',
+                        hint: 'e.g. 500mg',
+                        prefixIcon: Icons.science_outlined,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Section 2: Identifiers & Packaging
+          AppCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SectionHeader(
+                  stepNumber: '2',
+                  title: 'Packaging & Registration Identifiers',
+                  subtitle: 'NAFDAC registration, barcode, and batch codes',
+                ),
+                const SizedBox(height: 14),
+                AppTextField(
+                  controller: _nafdacController,
+                  label: 'NAFDAC Registration Number',
+                  hint: 'e.g. A4-7823 or 04-1234',
+                  helperText: 'Found printed on the outer carton or label',
+                  prefixIcon: Icons.verified_outlined,
+                ),
+                const SizedBox(height: 14),
+                AppTextField(
+                  controller: _barcodeController,
+                  label: 'Product Barcode (EAN-13)',
+                  hint: 'e.g. 6190012345670',
+                  keyboardType: TextInputType.number,
+                  prefixIcon: Icons.qr_code_2_rounded,
+                  suffix: IconButton(
+                    onPressed: _openBarcodeScanner,
+                    icon: const Icon(
+                      Icons.qr_code_scanner_rounded,
+                      color: AppColors.primary,
+                    ),
+                    tooltip: 'Scan Barcode with Camera',
+                  ),
+                ),
+                const SizedBox(height: 14),
+                AppTextField(
+                  controller: _batchController,
+                  label: 'Batch / Lot Number',
+                  hint: 'e.g. BN25-0042',
+                  helperText: 'Found embossed on blister foil or carton flap',
+                  prefixIcon: Icons.tag_rounded,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Section 3: Manufacturer & Origin
+          AppCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SectionHeader(
+                  stepNumber: '3',
+                  title: 'Manufacturer & Country of Origin',
+                  subtitle: 'Entity responsible for manufacturing and distribution',
+                ),
+                const SizedBox(height: 14),
+                AppTextField(
+                  controller: _manufacturerController,
+                  label: 'Manufacturer Name *',
+                  hint: 'e.g. Emzor Pharmaceutical Industries',
+                  prefixIcon: Icons.business_outlined,
+                  validator: (v) =>
+                      (v == null || v.trim().isEmpty) ? 'Manufacturer is required' : null,
+                ),
+                const SizedBox(height: 14),
+                AppDropdown<String>(
+                  label: 'Country of Origin',
+                  value: _selectedCountry,
+                  items: _countries,
+                  itemLabel: (c) => c,
+                  prefixIcon: Icons.public_rounded,
+                  onChanged: (v) => setState(() => _selectedCountry = v!),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // Submit Action Button
+          AppButton.primary(
+            label: 'Run AI Verification Check',
+            icon: Icons.search_rounded,
+            height: 52,
+            width: double.infinity,
+            isLoading: _isLoading,
+            onPressed: _submitVerification,
+          ),
+          const SizedBox(height: 24),
+
+          // Disclaimer
+          const DisclaimerCard(isCompact: true),
+          const SizedBox(height: 36),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSampleButtonsBar() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: AppRadius.md,
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.bolt_rounded, size: 16, color: AppColors.accent),
+          const SizedBox(width: 6),
+          Text(
+            'Quick Test:',
+            style: AppTypography.caption.copyWith(fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: InkWell(
+              onTap: _loadGenuineSample,
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.genuineSurface,
+                  borderRadius: AppRadius.sm,
+                  border: Border.all(color: AppColors.genuineBorder),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  'Genuine Sample',
+                  style: AppTypography.caption.copyWith(
+                    color: AppColors.genuine,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: InkWell(
+              onTap: _loadSuspiciousSample,
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.suspiciousSurface,
+                  borderRadius: AppRadius.sm,
+                  border: Border.all(color: AppColors.suspiciousBorder),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  'Suspicious Sample',
+                  style: AppTypography.caption.copyWith(
+                    color: AppColors.suspicious,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDesktopSidebar() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Presets Box
+        AppCard(
+          backgroundColor: AppColors.primarySurface,
+          borderColor: AppColors.primaryBorder,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Quick fill buttons
-              Row(
-                children: [
-                  Expanded(
-                    child: _SampleButton(
-                      label: '✅ Genuine Sample',
-                      color: const Color(0xFF00E676),
-                      onTap: _loadGenuineSample,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: _SampleButton(
-                      label: '⚠️ Suspicious Sample',
-                      color: const Color(0xFFFF9100),
-                      onTap: _loadSuspiciousSample,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-
-              // Drug Name
-              _buildTextField(
-                controller: _drugNameController,
-                label: 'Drug Name',
-                hint: 'e.g. Paracetamol',
-                icon: Icons.medication_rounded,
-                validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+              Text('Demonstration Presets', style: AppTypography.title),
+              const SizedBox(height: 4),
+              Text(
+                'Fill the form instantly with curated reference cases for your capstone presentation.',
+                style: AppTypography.bodySmall,
               ),
               const SizedBox(height: 14),
-
-              // Manufacturer
-              _buildTextField(
-                controller: _manufacturerController,
-                label: 'Manufacturer',
-                hint: 'e.g. Emzor Pharmaceutical Industries',
-                icon: Icons.business_rounded,
-                validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
-              ),
-              const SizedBox(height: 14),
-
-              // NAFDAC Number
-              _buildTextField(
-                controller: _nafdacController,
-                label: 'NAFDAC Number',
-                hint: 'e.g. A4-7823',
-                icon: Icons.verified_rounded,
-              ),
-              const SizedBox(height: 14),
-
-              // Barcode with scanner button
-              _buildTextField(
-                controller: _barcodeController,
-                label: 'Barcode',
-                hint: 'e.g. 6190012345670',
-                icon: Icons.qr_code_rounded,
-                keyboardType: TextInputType.number,
-                suffixIcon: IconButton(
-                  onPressed: _openBarcodeScanner,
-                  icon: const Icon(
-                    Icons.qr_code_scanner_rounded,
-                    color: Color(0xFF448AFF),
-                  ),
-                  tooltip: 'Scan barcode',
-                ),
-              ),
-              const SizedBox(height: 14),
-
-              // Batch Number
-              _buildTextField(
-                controller: _batchController,
-                label: 'Batch Number',
-                hint: 'e.g. BN25-0042',
-                icon: Icons.tag_rounded,
-              ),
-              const SizedBox(height: 14),
-
-              // Dosage Form dropdown
-              _buildDropdown(
-                label: 'Dosage Form',
-                value: _selectedDosageForm,
-                items: _dosageForms,
-                icon: Icons.local_pharmacy_rounded,
-                onChanged: (v) => setState(() => _selectedDosageForm = v!),
-              ),
-              const SizedBox(height: 14),
-
-              // Strength
-              _buildTextField(
-                controller: _strengthController,
-                label: 'Strength',
-                hint: 'e.g. 500mg',
-                icon: Icons.science_rounded,
-              ),
-              const SizedBox(height: 14),
-
-              // Country dropdown
-              _buildDropdown(
-                label: 'Country of Origin',
-                value: _selectedCountry,
-                items: _countries,
-                icon: Icons.flag_rounded,
-                onChanged: (v) => setState(() => _selectedCountry = v!),
-              ),
-              const SizedBox(height: 28),
-
-              // Submit button
-              SizedBox(
+              AppButton.primary(
+                label: 'Load Genuine Paracetamol',
+                icon: Icons.check_circle_outline_rounded,
                 width: double.infinity,
-                height: 54,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _submitCheck,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF448AFF),
-                    disabledBackgroundColor: const Color(0xFF448AFF).withValues(alpha: 0.4),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    elevation: 8,
-                    shadowColor: const Color(0xFF448AFF).withValues(alpha: 0.4),
-                  ),
-                  child: _isLoading
-                      ? const SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2.5,
-                            valueColor: AlwaysStoppedAnimation(Colors.white),
-                          ),
-                        )
-                      : Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(Icons.search_rounded, size: 22),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Check Drug',
-                              style: GoogleFonts.outfit(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                ),
+                onPressed: _loadGenuineSample,
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 10),
+              AppButton.danger(
+                label: 'Load Suspicious Counterfeit',
+                icon: Icons.warning_amber_rounded,
+                width: double.infinity,
+                onPressed: _loadSuspiciousSample,
+              ),
+              const SizedBox(height: 10),
+              AppButton.outlined(
+                label: 'Clear All Fields',
+                icon: Icons.clear_all_rounded,
+                width: double.infinity,
+                onPressed: _clearForm,
+              ),
             ],
           ),
         ),
-      ),
-    );
-  }
+        const SizedBox(height: 20),
 
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String label,
-    required String hint,
-    required IconData icon,
-    TextInputType keyboardType = TextInputType.text,
-    String? Function(String?)? validator,
-    Widget? suffixIcon,
-  }) {
-    return TextFormField(
-      controller: controller,
-      keyboardType: keyboardType,
-      validator: validator,
-      style: GoogleFonts.inter(fontSize: 14, color: Colors.white),
-      decoration: InputDecoration(
-        labelText: label,
-        hintText: hint,
-        prefixIcon: Icon(icon, color: Colors.white38, size: 20),
-        suffixIcon: suffixIcon,
-      ),
-    );
-  }
-
-  Widget _buildDropdown({
-    required String label,
-    required String value,
-    required List<String> items,
-    required IconData icon,
-    required ValueChanged<String?> onChanged,
-  }) {
-    return DropdownButtonFormField<String>(
-      initialValue: value,
-      onChanged: onChanged,
-      style: GoogleFonts.inter(fontSize: 14, color: Colors.white),
-      dropdownColor: const Color(0xFF1A2E4A),
-      decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: Icon(icon, color: Colors.white38, size: 20),
-      ),
-      items: items.map((item) {
-        return DropdownMenuItem(
-          value: item,
-          child: Text(item),
-        );
-      }).toList(),
-    );
-  }
-}
-
-// =============================================================================
-// Sample fill button widget
-// =============================================================================
-
-class _SampleButton extends StatelessWidget {
-  final String label;
-  final Color color;
-  final VoidCallback onTap;
-
-  const _SampleButton({
-    required this.label,
-    required this.color,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: color.withValues(alpha: 0.08),
-      borderRadius: BorderRadius.circular(10),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(10),
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: color.withValues(alpha: 0.2)),
-          ),
-          child: Center(
-            child: Text(
-              label,
-              style: GoogleFonts.inter(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: color,
+        // Packaging Checklist Guide
+        AppCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Physical Packaging Inspection', style: AppTypography.title),
+              const SizedBox(height: 12),
+              _buildSidebarTip(
+                'NAFDAC Format',
+                'Genuine numbers follow patterns such as A4-XXXX, 04-XXXX, or B4-XXXX.',
               ),
-            ),
+              const SizedBox(height: 10),
+              _buildSidebarTip(
+                'Matching Batch Numbers',
+                'Verify that the batch number printed on the outer carton matches the blister foil.',
+              ),
+              const SizedBox(height: 10),
+              _buildSidebarTip(
+                'Scratch Panel (MAS)',
+                'Anti-malarial products often include a scratch-and-SMS code for instant verification.',
+              ),
+            ],
           ),
         ),
-      ),
+      ],
     );
   }
-}
 
-// =============================================================================
-// Barcode scanner page (using mobile_scanner)
-// =============================================================================
-
-class _BarcodeScannerPage extends StatefulWidget {
-  const _BarcodeScannerPage();
-
-  @override
-  State<_BarcodeScannerPage> createState() => _BarcodeScannerPageState();
-}
-
-class _BarcodeScannerPageState extends State<_BarcodeScannerPage> {
-  final MobileScannerController _scannerController = MobileScannerController();
-  bool _hasScanned = false;
-
-  @override
-  void dispose() {
-    _scannerController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Scan Barcode'),
-        backgroundColor: Colors.black,
-        actions: [
-          IconButton(
-            onPressed: () => _scannerController.toggleTorch(),
-            icon: const Icon(Icons.flash_on_rounded),
-            tooltip: 'Toggle flashlight',
+  Widget _buildSidebarTip(String title, String desc) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Icon(Icons.check_rounded, size: 16, color: AppColors.primary),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: AppTypography.label.copyWith(fontSize: 13)),
+              const SizedBox(height: 2),
+              Text(desc, style: AppTypography.bodySmall),
+            ],
           ),
-          IconButton(
-            onPressed: () => _scannerController.switchCamera(),
-            icon: const Icon(Icons.cameraswitch_rounded),
-            tooltip: 'Switch camera',
-          ),
-        ],
-      ),
-      body: Stack(
-        children: [
-          MobileScanner(
-            controller: _scannerController,
-            onDetect: (capture) {
-              if (_hasScanned) return;
-              final barcodes = capture.barcodes;
-              if (barcodes.isNotEmpty && barcodes.first.rawValue != null) {
-                _hasScanned = true;
-                Navigator.pop(context, barcodes.first.rawValue);
-              }
-            },
-          ),
-          // Scan overlay
-          Center(
-            child: Container(
-              width: 260,
-              height: 160,
-              decoration: BoxDecoration(
-                border: Border.all(color: const Color(0xFF448AFF), width: 2),
-                borderRadius: BorderRadius.circular(16),
-              ),
-            ),
-          ),
-          // Instruction text
-          Positioned(
-            bottom: 80,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                decoration: BoxDecoration(
-                  color: Colors.black54,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  'Point camera at the barcode',
-                  style: GoogleFonts.inter(
-                    color: Colors.white,
-                    fontSize: 14,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

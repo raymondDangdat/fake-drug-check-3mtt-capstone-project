@@ -1,326 +1,76 @@
-import 'dart:math';
-import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-
+import 'package:intl/intl.dart';
 import '../models/drug_check_result.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_radius.dart';
+import '../theme/app_spacing.dart';
+import '../theme/app_typography.dart';
+import '../widgets/app_button.dart';
+import '../widgets/app_card.dart';
+import '../widgets/confidence_meter.dart';
+import '../widgets/disclaimer_card.dart';
+import '../widgets/responsive_layout.dart';
+import '../widgets/section_header.dart';
+import '../widgets/status_badge.dart';
 
-/// Results screen — displays verdict, confidence gauge, explanations, and recommendation.
-class ResultsScreen extends StatefulWidget {
+/// Clinical verification report screen displaying verdict, findings, recommendations, and inputs.
+class ResultsScreen extends StatelessWidget {
   final DrugCheckResult result;
 
   const ResultsScreen({super.key, required this.result});
 
   @override
-  State<ResultsScreen> createState() => _ResultsScreenState();
-}
-
-class _ResultsScreenState extends State<ResultsScreen>
-    with TickerProviderStateMixin {
-  late AnimationController _gaugeController;
-  late AnimationController _fadeController;
-  late Animation<double> _gaugeAnim;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _gaugeController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1500),
-    );
-    _gaugeAnim = Tween<double>(begin: 0, end: widget.result.confidence).animate(
-      CurvedAnimation(parent: _gaugeController, curve: Curves.easeOutCubic),
-    );
-
-    _fadeController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 600),
-    );
-
-    // Stagger animations
-    Future.delayed(const Duration(milliseconds: 200), () {
-      if (mounted) _fadeController.forward();
-    });
-    Future.delayed(const Duration(milliseconds: 500), () {
-      if (mounted) _gaugeController.forward();
-    });
-  }
-
-  @override
-  void dispose() {
-    _gaugeController.dispose();
-    _fadeController.dispose();
-    super.dispose();
-  }
-
-  Color get _verdictColor => widget.result.isGenuine
-      ? const Color(0xFF00E676)
-      : const Color(0xFFFF1744);
-
-  Color get _verdictGlow => widget.result.isGenuine
-      ? const Color(0xFF00E676).withValues(alpha: 0.3)
-      : const Color(0xFFFF1744).withValues(alpha: 0.3);
-
-  IconData get _verdictIcon => widget.result.isGenuine
-      ? Icons.verified_rounded
-      : Icons.warning_rounded;
-
-  @override
   Widget build(BuildContext context) {
+    final formattedDate = DateFormat('MMM d, yyyy • h:mm a').format(result.checkedAt);
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Results')),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xFF0D2137), Color(0xFF0A1628)],
-          ),
-        ),
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-          child: Column(
-            children: [
-              // Verdict Card
-              FadeTransition(
-                opacity: CurvedAnimation(
-                  parent: _fadeController,
-                  curve: Curves.easeOut,
-                ),
-                child: _buildVerdictCard(),
-              ),
-              const SizedBox(height: 24),
-
-              // Confidence Gauge
-              _buildConfidenceGauge(),
-              const SizedBox(height: 28),
-
-              // Explanation Section
-              FadeTransition(
-                opacity: CurvedAnimation(
-                  parent: _fadeController,
-                  curve: const Interval(0.3, 1, curve: Curves.easeOut),
-                ),
-                child: _buildExplanationSection(),
-              ),
-              const SizedBox(height: 20),
-
-              // Recommendation
-              FadeTransition(
-                opacity: CurvedAnimation(
-                  parent: _fadeController,
-                  curve: const Interval(0.5, 1, curve: Curves.easeOut),
-                ),
-                child: _buildRecommendation(),
-              ),
-              const SizedBox(height: 20),
-
-              // Input summary
-              FadeTransition(
-                opacity: CurvedAnimation(
-                  parent: _fadeController,
-                  curve: const Interval(0.6, 1, curve: Curves.easeOut),
-                ),
-                child: _buildInputSummary(),
-              ),
-              const SizedBox(height: 24),
-
-              // Check another button
-              SizedBox(
-                width: double.infinity,
-                height: 52,
-                child: OutlinedButton(
-                  onPressed: () => Navigator.pop(context),
-                  style: OutlinedButton.styleFrom(
-                    side: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                  ),
-                  child: Text(
-                    'Check Another Drug',
-                    style: GoogleFonts.outfit(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white70,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 32),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildVerdictCard() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(28),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(24),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            _verdictColor.withValues(alpha: 0.15),
-            _verdictColor.withValues(alpha: 0.05),
-          ],
-        ),
-        border: Border.all(color: _verdictColor.withValues(alpha: 0.3)),
-        boxShadow: [
-          BoxShadow(
-            color: _verdictGlow,
-            blurRadius: 40,
-            spreadRadius: -5,
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        title: const Text('Verification Report'),
+        actions: [
+          IconButton(
+            onPressed: () => Navigator.pushNamed(context, '/history'),
+            icon: const Icon(Icons.history_rounded),
+            tooltip: 'View History',
           ),
         ],
       ),
-      child: Column(
-        children: [
-          // Icon
-          Container(
-            width: 72,
-            height: 72,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: _verdictColor.withValues(alpha: 0.15),
-            ),
-            child: Icon(_verdictIcon, color: _verdictColor, size: 40),
-          ),
-          const SizedBox(height: 16),
-
-          // Verdict text
-          Text(
-            widget.result.prediction.toUpperCase(),
-            style: GoogleFonts.outfit(
-              fontSize: 28,
-              fontWeight: FontWeight.w800,
-              color: _verdictColor,
-              letterSpacing: 2,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            widget.result.isGenuine
-                ? 'This drug appears to be authentic'
-                : 'This drug shows suspicious indicators',
-            style: GoogleFonts.inter(
-              fontSize: 14,
-              color: Colors.white54,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildConfidenceGauge() {
-    return AnimatedBuilder(
-      animation: _gaugeAnim,
-      builder: (context, child) {
-        return Column(
-          children: [
-            SizedBox(
-              width: 140,
-              height: 140,
-              child: CustomPaint(
-                painter: _GaugePainter(
-                  progress: _gaugeAnim.value,
-                  color: _verdictColor,
-                ),
-                child: Center(
-                  child: Text(
-                    '${(_gaugeAnim.value * 100).toInt()}%',
-                    style: GoogleFonts.outfit(
-                      fontSize: 32,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Confidence Score',
-              style: GoogleFonts.inter(
-                fontSize: 13,
-                color: Colors.white54,
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _buildExplanationSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Analysis Details',
-          style: Theme.of(context).textTheme.headlineSmall,
-        ),
-        const SizedBox(height: 12),
-        ...widget.result.explanation.map((exp) => _buildExplanationTile(exp)),
-      ],
-    );
-  }
-
-  Widget _buildExplanationTile(String text) {
-    final isPositive = text.startsWith('✅');
-    final isWarning = text.startsWith('⚠️') || text.startsWith('🚩');
-    final isInfo = text.startsWith('🔍');
-
-    Color tileColor;
-    if (isPositive) {
-      tileColor = const Color(0xFF00E676);
-    } else if (isWarning) {
-      tileColor = const Color(0xFFFF9100);
-    } else if (isInfo) {
-      tileColor = const Color(0xFF448AFF);
-    } else {
-      tileColor = Colors.white54;
-    }
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-          child: Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: tileColor.withValues(alpha: 0.06),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: tileColor.withValues(alpha: 0.15)),
-            ),
-            child: Row(
+      body: SingleChildScrollView(
+        padding: ResponsiveLayout.isDesktop(context)
+            ? AppSpacing.screenPaddingDesktop
+            : AppSpacing.screenPaddingMobile,
+        child: MaxWidthContainer(
+          child: ResponsiveLayout(
+            mobile: _buildReportContent(context, formattedDate),
+            desktop: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  width: 6,
-                  height: 6,
-                  margin: const EdgeInsets.only(top: 6, right: 10),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: tileColor,
+                // Left Column: Verdict & Metrics
+                Expanded(
+                  flex: 5,
+                  child: Column(
+                    children: [
+                      _buildVerdictCard(context, formattedDate),
+                      const SizedBox(height: 20),
+                      _buildRecommendationCard(),
+                      const SizedBox(height: 20),
+                      _buildActions(context),
+                    ],
                   ),
                 ),
+                const SizedBox(width: 32),
+
+                // Right Column: Findings & Input Breakdown
                 Expanded(
-                  child: Text(
-                    text,
-                    style: GoogleFonts.inter(
-                      fontSize: 13,
-                      color: Colors.white70,
-                      height: 1.5,
-                    ),
+                  flex: 6,
+                  child: Column(
+                    children: [
+                      _buildFindingsCard(context),
+                      const SizedBox(height: 20),
+                      _buildInputSummaryCard(),
+                      const SizedBox(height: 20),
+                      const DisclaimerCard(),
+                    ],
                   ),
                 ),
               ],
@@ -331,42 +81,208 @@ class _ResultsScreenState extends State<ResultsScreen>
     );
   }
 
-  Widget _buildRecommendation() {
+  Widget _buildReportContent(BuildContext context, String formattedDate) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildVerdictCard(context, formattedDate),
+        const SizedBox(height: 16),
+        _buildFindingsCard(context),
+        const SizedBox(height: 16),
+        _buildRecommendationCard(),
+        const SizedBox(height: 16),
+        _buildInputSummaryCard(),
+        const SizedBox(height: 24),
+        _buildActions(context),
+        const SizedBox(height: 24),
+        const DisclaimerCard(isCompact: true),
+        const SizedBox(height: 36),
+      ],
+    );
+  }
+
+  Widget _buildVerdictCard(BuildContext context, String formattedDate) {
+    final isGenuine = result.isGenuine;
+    final color = isGenuine ? AppColors.genuine : AppColors.suspicious;
+    final surfaceColor = isGenuine ? AppColors.genuineSurface : AppColors.suspiciousSurface;
+    final borderColor = isGenuine ? AppColors.genuineBorder : AppColors.suspiciousBorder;
+    final icon = isGenuine ? Icons.check_circle_rounded : Icons.warning_rounded;
+
+    return AppCard(
+      backgroundColor: surfaceColor,
+      borderColor: borderColor,
+      padding: const EdgeInsets.all(22),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              StatusBadge(
+                label: isGenuine ? 'Low Risk' : 'Suspicious Anomaly',
+                variant: isGenuine ? StatusBadgeVariant.genuine : StatusBadgeVariant.suspicious,
+              ),
+              Text(
+                formattedDate,
+                style: AppTypography.caption,
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: color,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, color: Colors.white, size: 28),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      result.verdictTitle,
+                      style: AppTypography.h2.copyWith(color: color),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      result.verdictSubtitle,
+                      style: AppTypography.bodySmall.copyWith(
+                        color: isGenuine ? const Color(0xFF065F46) : const Color(0xFF991B1B),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          const Divider(color: AppColors.border),
+          const SizedBox(height: 16),
+
+          // Confidence Meter
+          ConfidenceMeter(
+            confidence: result.confidence,
+            isGenuine: isGenuine,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFindingsCard(BuildContext context) {
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SectionHeader(
+            icon: Icons.checklist_rounded,
+            title: 'Diagnostic Findings',
+            subtitle: 'Evaluated verification criteria and pattern matches',
+          ),
+          const SizedBox(height: 14),
+          if (result.explanation.isEmpty)
+            Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Text(
+                'No specific anomaly notes returned for this record.',
+                style: AppTypography.bodySmall,
+              ),
+            )
+          else
+            ...result.explanation.map((item) => _buildFindingTile(item)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFindingTile(String text) {
+    final cleanText = text
+        .replaceAll('✅', '')
+        .replaceAll('⚠️', '')
+        .replaceAll('🚩', '')
+        .replaceAll('🔍', '')
+        .trim();
+
+    final isPositive = text.contains('✅') || text.toLowerCase().contains('match') || text.toLowerCase().contains('valid');
+    final isWarning = text.contains('⚠️') || text.contains('🚩') || text.toLowerCase().contains('unusual') || text.toLowerCase().contains('suspicious') || text.toLowerCase().contains('mismatch');
+
+    Color tileColor = AppColors.textPrimary;
+    IconData tileIcon = Icons.info_outline_rounded;
+    Color iconColor = AppColors.textMuted;
+
+    if (isPositive) {
+      tileIcon = Icons.check_circle_outline_rounded;
+      iconColor = AppColors.genuine;
+    } else if (isWarning) {
+      tileIcon = Icons.warning_amber_rounded;
+      iconColor = AppColors.suspicious;
+    }
+
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(18),
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: const Color(0xFF448AFF).withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(16),
+        color: isWarning ? AppColors.suspiciousSurface : AppColors.surfaceMuted,
+        borderRadius: AppRadius.md,
         border: Border.all(
-          color: const Color(0xFF448AFF).withValues(alpha: 0.2),
+          color: isWarning ? AppColors.suspiciousBorder : AppColors.border,
         ),
       ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(tileIcon, size: 18, color: iconColor),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              cleanText,
+              style: AppTypography.bodySmall.copyWith(
+                color: tileColor,
+                height: 1.45,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRecommendationCard() {
+    return AppCard(
+      backgroundColor: AppColors.accentLight,
+      borderColor: const Color(0xFFBAE6FD),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Icon(Icons.lightbulb_rounded,
-                  color: Color(0xFF448AFF), size: 18),
+              const Icon(
+                Icons.lightbulb_outline_rounded,
+                size: 20,
+                color: AppColors.accentDark,
+              ),
               const SizedBox(width: 8),
               Text(
-                'Recommendation',
-                style: GoogleFonts.outfit(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: const Color(0xFF448AFF),
+                'Clinical Guidance & Next Steps',
+                style: AppTypography.title.copyWith(
+                  color: AppColors.accentDark,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           Text(
-            widget.result.recommendation,
-            style: GoogleFonts.inter(
-              fontSize: 13,
-              color: Colors.white70,
-              height: 1.6,
+            result.recommendation,
+            style: AppTypography.body.copyWith(
+              color: const Color(0xFF0C4A6E),
+              height: 1.5,
             ),
           ),
         ],
@@ -374,116 +290,83 @@ class _ResultsScreenState extends State<ResultsScreen>
     );
   }
 
-  Widget _buildInputSummary() {
-    if (widget.result.inputData.isEmpty) return const SizedBox.shrink();
+  Widget _buildInputSummaryCard() {
+    if (result.inputData.isEmpty) return const SizedBox.shrink();
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.03),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
-      ),
+    return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Input Summary',
-            style: GoogleFonts.outfit(
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
-              color: Colors.white54,
-            ),
+          const SectionHeader(
+            icon: Icons.inventory_2_outlined,
+            title: 'Submitted Product Details',
+            subtitle: 'Summary of the verified packaging data',
           ),
           const SizedBox(height: 12),
-          ...widget.result.inputData.entries.map((entry) {
-            if (entry.value.isEmpty) return const SizedBox.shrink();
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 6),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+          Table(
+            columnWidths: const {
+              0: FlexColumnWidth(4),
+              1: FlexColumnWidth(6),
+            },
+            children: result.inputData.entries.map((entry) {
+              final value = entry.value.isEmpty ? 'Not specified' : entry.value;
+              return TableRow(
+                decoration: const BoxDecoration(
+                  border: Border(bottom: BorderSide(color: AppColors.border, width: 0.5)),
+                ),
                 children: [
-                  SizedBox(
-                    width: 110,
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
                     child: Text(
                       entry.key,
-                      style: GoogleFonts.inter(
-                        fontSize: 12,
-                        color: Colors.white38,
+                      style: AppTypography.bodySmall.copyWith(
+                        color: AppColors.textMuted,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
-                  Expanded(
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
                     child: Text(
-                      entry.value,
-                      style: GoogleFonts.inter(
-                        fontSize: 12,
-                        color: Colors.white70,
+                      value,
+                      style: AppTypography.bodySmall.copyWith(
+                        color: AppColors.textPrimary,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ),
                 ],
-              ),
-            );
-          }),
+              );
+            }).toList(),
+          ),
         ],
       ),
     );
   }
-}
 
-// =============================================================================
-// Animated circular gauge painter
-// =============================================================================
-
-class _GaugePainter extends CustomPainter {
-  final double progress;
-  final Color color;
-
-  _GaugePainter({required this.progress, required this.color});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width / 2 - 10;
-
-    // Background arc
-    final bgPaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.06)
-      ..strokeWidth = 10
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
-
-    canvas.drawArc(
-      Rect.fromCircle(center: center, radius: radius),
-      -pi * 0.75,
-      pi * 1.5,
-      false,
-      bgPaint,
-    );
-
-    // Progress arc
-    final progressPaint = Paint()
-      ..shader = SweepGradient(
-        startAngle: -pi * 0.75,
-        endAngle: pi * 0.75,
-        colors: [color.withValues(alpha: 0.3), color],
-      ).createShader(Rect.fromCircle(center: center, radius: radius))
-      ..strokeWidth = 10
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
-
-    canvas.drawArc(
-      Rect.fromCircle(center: center, radius: radius),
-      -pi * 0.75,
-      pi * 1.5 * progress,
-      false,
-      progressPaint,
+  Widget _buildActions(BuildContext context) {
+    return Column(
+      children: [
+        AppButton.primary(
+          label: 'Verify Another Medicine',
+          icon: Icons.search_rounded,
+          height: 50,
+          width: double.infinity,
+          onPressed: () {
+            Navigator.of(context).pushNamedAndRemoveUntil('/home', (r) => false);
+          },
+        ),
+        const SizedBox(height: 10),
+        AppButton.outlined(
+          label: 'View Verification Archive',
+          icon: Icons.history_rounded,
+          height: 50,
+          width: double.infinity,
+          onPressed: () {
+            Navigator.pushNamed(context, '/history');
+          },
+        ),
+      ],
     );
   }
-
-  @override
-  bool shouldRepaint(covariant _GaugePainter oldDelegate) =>
-      oldDelegate.progress != progress;
 }

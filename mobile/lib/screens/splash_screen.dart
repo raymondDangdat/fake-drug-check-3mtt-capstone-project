@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_radius.dart';
+import '../theme/app_typography.dart';
 
-/// Animated splash screen with app logo and tagline.
+/// Clean clinical splash screen with logo mark and subtitle.
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -14,32 +16,24 @@ class _SplashScreenState extends State<SplashScreen>
   late AnimationController _controller;
   late Animation<double> _fadeAnim;
   late Animation<double> _scaleAnim;
-  late Animation<Offset> _slideAnim;
 
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1800),
+      duration: const Duration(milliseconds: 1000),
     );
 
-    _fadeAnim = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _controller, curve: const Interval(0, 0.5, curve: Curves.easeOut)),
-    );
-
-    _scaleAnim = Tween<double>(begin: 0.5, end: 1).animate(
-      CurvedAnimation(parent: _controller, curve: const Interval(0, 0.5, curve: Curves.elasticOut)),
-    );
-
-    _slideAnim = Tween<Offset>(begin: const Offset(0, 0.3), end: Offset.zero).animate(
-      CurvedAnimation(parent: _controller, curve: const Interval(0.3, 0.7, curve: Curves.easeOut)),
+    _fadeAnim = CurvedAnimation(parent: _controller, curve: Curves.easeOut);
+    _scaleAnim = Tween<double>(begin: 0.9, end: 1.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
     );
 
     _controller.forward();
 
-    // Navigate to home after splash
-    Future.delayed(const Duration(milliseconds: 2800), () {
+    // Navigate to home after brief splash
+    Future.delayed(const Duration(milliseconds: 1400), () {
       if (mounted) {
         Navigator.of(context).pushReplacementNamed('/home');
       }
@@ -55,108 +49,89 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF0A1628),
-              Color(0xFF0D2137),
-              Color(0xFF0A1628),
-            ],
-          ),
-        ),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Shield icon with pulse
-              FadeTransition(
-                opacity: _fadeAnim,
-                child: ScaleTransition(
-                  scale: _scaleAnim,
-                  child: Container(
-                    width: 120,
-                    height: 120,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: const LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [Color(0xFF448AFF), Color(0xFF00E676)],
+      backgroundColor: AppColors.background,
+      body: Center(
+        child: FadeTransition(
+          opacity: _fadeAnim,
+          child: ScaleTransition(
+            scale: _scaleAnim,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Medical shield badge logo
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    borderRadius: AppRadius.xl,
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.primary.withValues(alpha: 0.2),
+                        blurRadius: 20,
+                        offset: const Offset(0, 8),
                       ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF448AFF).withValues(alpha: 0.4),
-                          blurRadius: 40,
-                          spreadRadius: 5,
+                    ],
+                  ),
+                  child: const Icon(
+                    Icons.verified_user_rounded,
+                    size: 42,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // Brand Title
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'FakeDrugChecker',
+                      style: AppTypography.h1.copyWith(
+                        fontSize: 26,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: AppColors.primarySurface,
+                        borderRadius: AppRadius.sm,
+                        border: Border.all(color: AppColors.primaryBorder),
+                      ),
+                      child: Text(
+                        'NG',
+                        style: AppTypography.caption.copyWith(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w800,
                         ),
-                      ],
+                      ),
                     ),
-                    child: const Icon(
-                      Icons.verified_user_rounded,
-                      size: 60,
-                      color: Colors.white,
-                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+
+                // Clinical Tagline
+                Text(
+                  'Medication Authenticity & Risk Verification',
+                  style: AppTypography.bodySmall.copyWith(
+                    color: AppColors.textSecondary,
                   ),
                 ),
-              ),
-              const SizedBox(height: 32),
+                const SizedBox(height: 48),
 
-              // App name
-              SlideTransition(
-                position: _slideAnim,
-                child: FadeTransition(
-                  opacity: _fadeAnim,
-                  child: Text(
-                    'FakeDrugChecker',
-                    style: GoogleFonts.outfit(
-                      fontSize: 32,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.white,
-                      letterSpacing: -0.5,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-
-              // Tagline
-              SlideTransition(
-                position: _slideAnim,
-                child: FadeTransition(
-                  opacity: _fadeAnim,
-                  child: Text(
-                    'AI-Powered Drug Verification',
-                    style: GoogleFonts.inter(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w400,
-                      color: Colors.white54,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 48),
-
-              // Loading indicator
-              FadeTransition(
-                opacity: _fadeAnim,
-                child: SizedBox(
-                  width: 32,
-                  height: 32,
+                // Subtle Loading Spinner
+                const SizedBox(
+                  width: 22,
+                  height: 22,
                   child: CircularProgressIndicator(
-                    strokeWidth: 2.5,
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      Colors.white.withValues(alpha: 0.3),
-                    ),
+                    strokeWidth: 2.2,
+                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
