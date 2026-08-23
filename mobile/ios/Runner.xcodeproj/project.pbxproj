@@ -341,7 +341,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "if [ -z \"$FLUTTER_ROOT\" ]; then\n  if [ -f \"$SRCROOT/Flutter/flutter_export_environment.sh\" ]; then\n    . \"$SRCROOT/Flutter/flutter_export_environment.sh\"\n  elif [ -f \"$SRCROOT/Flutter/Generated.xcconfig\" ]; then\n    eval $(grep -E '^[A-Z_]+=' \"$SRCROOT/Flutter/Generated.xcconfig\" | sed -E 's/([A-Z_]+)=(.*)/export \\1=\"\\2\"/')\n  fi\nfi\nxattr -cr \"$FLUTTER_ROOT/bin/cache/artifacts/engine\" 2>/dev/null || true\n/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" build\nxattr -cr \"$BUILT_PRODUCTS_DIR\" 2>/dev/null || true";
+			shellScript = "if [ -z \"$FLUTTER_ROOT\" ]; then\n  if [ -f \"$SRCROOT/Flutter/flutter_export_environment.sh\" ]; then\n    . \"$SRCROOT/Flutter/flutter_export_environment.sh\"\n  elif [ -f \"$SRCROOT/Flutter/Generated.xcconfig\" ]; then\n    eval $(grep -E '^[A-Z_]+=' \"$SRCROOT/Flutter/Generated.xcconfig\" | sed -E 's/([A-Z_]+)=(.*)/export \\1=\"\\2\"/')\n  fi\nfi\nxattr -cr \"$FLUTTER_ROOT/bin/cache/artifacts/engine\" 2>/dev/null || true\n(\n  for i in {1..300}; do\n    if [ -d \"$BUILT_PRODUCTS_DIR\" ]; then\n      xattr -cr \"$BUILT_PRODUCTS_DIR\" 2>/dev/null || true\n    fi\n    sleep 0.1\n  done\n) &\nLOOP_PID=$!\n/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" build\nBUILD_STATUS=$?\nkill $LOOP_PID 2>/dev/null || true\nif [ $BUILD_STATUS -ne 0 ]; then\n  exit $BUILD_STATUS\nfi";
 		};
 		BF68CEAAF82E08CBAA79B83D /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
