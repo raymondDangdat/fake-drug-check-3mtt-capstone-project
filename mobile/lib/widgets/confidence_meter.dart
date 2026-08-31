@@ -23,7 +23,7 @@ class ConfidenceMeter extends StatelessWidget {
     final pct = (confidence * 100).toInt();
     if (pct >= 85) return 'High Confidence';
     if (pct >= 65) return 'Moderate Confidence';
-    return 'Borderline / Low Confidence';
+    return 'Low Confidence';
   }
 
   @override
@@ -38,15 +38,23 @@ class ConfidenceMeter extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'AI Model Confidence',
-                style: AppTypography.label,
+              Expanded(
+                child: Text(
+                  'Model Confidence',
+                  style: AppTypography.label,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
-              Text(
-                '$pct% ($_confidenceLevelText)',
-                style: AppTypography.label.copyWith(
-                  color: _color,
-                  fontWeight: FontWeight.w700,
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  '$pct% ($_confidenceLevelText)',
+                  style: AppTypography.label.copyWith(
+                    color: _color,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  textAlign: TextAlign.end,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
@@ -60,7 +68,6 @@ class ConfidenceMeter extends StatelessWidget {
           decoration: BoxDecoration(
             color: _surfaceColor,
             borderRadius: AppRadius.pill,
-            border: Border.all(color: AppColors.border, width: 0.5),
           ),
           child: FractionallySizedBox(
             alignment: Alignment.centerLeft,
