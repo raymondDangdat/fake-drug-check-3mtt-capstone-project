@@ -9,7 +9,8 @@
 </p>
 
 <p align="center">
-  <a href="https://fake-drug-check-3mtt-capstone-project-yharfs33hhbumewhrtiwc9.streamlit.app"><img src="https://img.shields.io/badge/Streamlit_App-Live_Web_Portal-FF4B4B?style=for-the-badge&logo=streamlit" alt="Streamlit App"/></a>
+  <a href="https://fake-drug-check-3mtt-capstone-project-yhqrfs33hhbumewhrtiwc9.streamlit.app/"><img src="https://img.shields.io/badge/Streamlit_App-Live_Web_Portal-FF4B4B?style=for-the-badge&logo=streamlit" alt="Streamlit App"/></a>
+  <a href="https://drive.google.com/file/d/1g-nsuA7aJSQOkhr8Avb6Vrz6LZqC05zD/view?usp=sharing"><img src="https://img.shields.io/badge/Android_App-Download_APK-3DDC84?style=for-the-badge&logo=android" alt="Download Android APK"/></a>
   <a href="https://fake-drug-checker-api.onrender.com/docs"><img src="https://img.shields.io/badge/FastAPI_Backend-Live_Swagger_Docs-009688?style=for-the-badge&logo=fastapi" alt="FastAPI Docs"/></a>
   <a href="https://github.com/raymondDangdat/fake-drug-check-3mtt-capstone-project"><img src="https://img.shields.io/badge/Flutter_App-iOS_%26_Android-02569B?style=for-the-badge&logo=flutter" alt="Flutter App"/></a>
 </p>
@@ -20,12 +21,13 @@
 
 | Service | Environment | URL / Endpoint |
 | :--- | :--- | :--- |
+| **Streamlit Web Portal** | Live (Streamlit Cloud) | [https://fake-drug-check-3mtt-capstone-project-yhqrfs33hhbumewhrtiwc9.streamlit.app/](https://fake-drug-check-3mtt-capstone-project-yhqrfs33hhbumewhrtiwc9.streamlit.app/) |
+| **Android Application (.APK)** | Direct Download | [Download Android APK (Google Drive)](https://drive.google.com/file/d/1g-nsuA7aJSQOkhr8Avb6Vrz6LZqC05zD/view?usp=sharing) |
 | **Production API Base URL** | Live (Render) | `https://fake-drug-checker-api.onrender.com` |
 | **Interactive API Documentation** | Swagger UI | [https://fake-drug-checker-api.onrender.com/docs](https://fake-drug-checker-api.onrender.com/docs) |
 | **Alternative API Docs** | ReDoc | [https://fake-drug-checker-api.onrender.com/redoc](https://fake-drug-checker-api.onrender.com/redoc) |
 | **API Health Check** | REST GET | `https://fake-drug-checker-api.onrender.com/health` |
 | **Drug Prediction Endpoint** | REST POST | `https://fake-drug-checker-api.onrender.com/predict` |
-| **Streamlit Web Portal** | Live (Streamlit Cloud) | [Live Web App](https://fake-drug-check-3mtt-capstone-project-yharfs33hhbumewhrtiwc9.streamlit.app) |
 
 ---
 
@@ -86,13 +88,18 @@ graph TD
 ### Prerequisites
 - **Git** installed on your system.
 - **Python 3.12+** with `pip`.
-- **Flutter SDK 3.12+** (if building or running the mobile application).
+- **Flutter SDK 3.12+** (if building or running the mobile application from source).
 - **Xcode / Android Studio** (if deploying to physical iOS/Android devices or simulators).
 
 ---
 
 ### 1. Running the Flutter Mobile App (iOS & Android)
 
+#### 📲 Quick Install on Android:
+You can directly download and install the pre-compiled APK on any Android device:
+👉 **[Download FakeDrugChecker Android APK](https://drive.google.com/file/d/1g-nsuA7aJSQOkhr8Avb6Vrz6LZqC05zD/view?usp=sharing)**
+
+#### 💻 Running from Source:
 The cross-platform Flutter application connects directly to the production FastAPI backend by default.
 
 ```bash
