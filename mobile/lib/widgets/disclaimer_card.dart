@@ -3,7 +3,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_radius.dart';
 import '../theme/app_typography.dart';
 
-/// NAFDAC & safety compliance notice card.
+/// NAFDAC & safety compliance notice card with clean borderless styling.
 class DisclaimerCard extends StatelessWidget {
   final String? customText;
   final bool isCompact;
@@ -21,7 +21,6 @@ class DisclaimerCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.warningSurface,
         borderRadius: AppRadius.md,
-        border: Border.all(color: AppColors.warningBorder),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,

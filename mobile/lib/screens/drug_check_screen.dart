@@ -11,7 +11,6 @@ import '../widgets/app_card.dart';
 import '../widgets/app_dropdown.dart';
 import '../widgets/app_text_field.dart';
 import '../widgets/disclaimer_card.dart';
-import '../widgets/loading_indicator.dart';
 import '../widgets/responsive_layout.dart';
 import '../widgets/section_header.dart';
 import 'barcode_scanner_sheet.dart';
@@ -172,21 +171,6 @@ class _DrugCheckScreenState extends State<DrugCheckScreen> {
 
     setState(() => _isLoading = true);
 
-    // Show step-by-step loading modal
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => const PopScope(
-        canPop: false,
-        child: Center(
-          child: MaxWidthContainer(
-            maxWidth: 420,
-            child: LoadingIndicator(),
-          ),
-        ),
-      ),
-    );
-
     final apiService = context.read<ApiService>();
     final historyService = context.read<HistoryService>();
 
@@ -206,7 +190,6 @@ class _DrugCheckScreenState extends State<DrugCheckScreen> {
       await historyService.saveResult(result);
 
       if (mounted) {
-        Navigator.pop(context); // Dismiss loading dialog
         Navigator.pushReplacementNamed(
           context,
           '/results',
@@ -215,12 +198,10 @@ class _DrugCheckScreenState extends State<DrugCheckScreen> {
       }
     } on ApiException catch (e) {
       if (mounted) {
-        Navigator.pop(context); // Dismiss loading dialog
         _showErrorSnackBar(e.message);
       }
     } catch (_) {
       if (mounted) {
-        Navigator.pop(context); // Dismiss loading dialog
         _showErrorSnackBar('Verification timed out. Please check your internet connection.');
       }
     } finally {
@@ -432,6 +413,7 @@ class _DrugCheckScreenState extends State<DrugCheckScreen> {
           // Submit Action Button
           AppButton.primary(
             label: 'Run AI Verification Check',
+            loadingLabel: 'Analyzing with AI Engine...',
             icon: Icons.search_rounded,
             height: 52,
             width: double.infinity,
@@ -454,7 +436,13 @@ class _DrugCheckScreenState extends State<DrugCheckScreen> {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: AppRadius.md,
-        border: Border.all(color: AppColors.border),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Row(
         children: [
@@ -469,11 +457,10 @@ class _DrugCheckScreenState extends State<DrugCheckScreen> {
             child: InkWell(
               onTap: _loadGenuineSample,
               child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 4),
+                padding: const EdgeInsets.symmetric(vertical: 6),
                 decoration: BoxDecoration(
                   color: AppColors.genuineSurface,
                   borderRadius: AppRadius.sm,
-                  border: Border.all(color: AppColors.genuineBorder),
                 ),
                 alignment: Alignment.center,
                 child: Text(
@@ -491,11 +478,10 @@ class _DrugCheckScreenState extends State<DrugCheckScreen> {
             child: InkWell(
               onTap: _loadSuspiciousSample,
               child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 4),
+                padding: const EdgeInsets.symmetric(vertical: 6),
                 decoration: BoxDecoration(
                   color: AppColors.suspiciousSurface,
                   borderRadius: AppRadius.sm,
-                  border: Border.all(color: AppColors.suspiciousBorder),
                 ),
                 alignment: Alignment.center,
                 child: Text(

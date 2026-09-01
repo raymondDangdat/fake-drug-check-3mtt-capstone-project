@@ -46,7 +46,13 @@ class _LoadingIndicatorState extends State<LoadingIndicator> {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: AppRadius.lg,
-        border: Border.all(color: AppColors.border),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,

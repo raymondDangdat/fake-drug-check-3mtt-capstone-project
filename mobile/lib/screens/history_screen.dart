@@ -287,9 +287,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
             decoration: BoxDecoration(
               color: item.isGenuine ? AppColors.genuineSurface : AppColors.suspiciousSurface,
               borderRadius: AppRadius.md,
-              border: Border.all(
-                color: item.isGenuine ? AppColors.genuineBorder : AppColors.suspiciousBorder,
-              ),
             ),
             child: Icon(
               item.isGenuine ? Icons.check_circle_rounded : Icons.warning_rounded,

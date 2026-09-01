@@ -116,7 +116,6 @@
 				E2EF04621346720DC55848C3 /* Pods-RunnerTests.release.xcconfig */,
 				BCE2AD44D7DF0A15377700A6 /* Pods-RunnerTests.profile.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};
@@ -341,7 +340,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "if [ -z \"$FLUTTER_ROOT\" ]; then\n  if [ -f \"$SRCROOT/Flutter/flutter_export_environment.sh\" ]; then\n    . \"$SRCROOT/Flutter/flutter_export_environment.sh\"\n  elif [ -f \"$SRCROOT/Flutter/Generated.xcconfig\" ]; then\n    eval $(grep -E '^[A-Z_]+=' \"$SRCROOT/Flutter/Generated.xcconfig\" | sed -E 's/([A-Z_]+)=(.*)/export \\1=\"\\2\"/')\n  fi\nfi\nxattr -cr \"$FLUTTER_ROOT/bin/cache/artifacts/engine\" 2>/dev/null || true\n(\n  for i in {1..300}; do\n    if [ -d \"$BUILT_PRODUCTS_DIR\" ]; then\n      xattr -cr \"$BUILT_PRODUCTS_DIR\" 2>/dev/null || true\n    fi\n    sleep 0.1\n  done\n) &\nLOOP_PID=$!\n/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" build\nBUILD_STATUS=$?\nkill $LOOP_PID 2>/dev/null || true\nif [ $BUILD_STATUS -ne 0 ]; then\n  exit $BUILD_STATUS\nfi";
+			shellScript = "if [ -z \"$FLUTTER_ROOT\" ]; then\n  if [ -f \"$SRCROOT/Flutter/flutter_export_environment.sh\" ]; then\n    . \"$SRCROOT/Flutter/flutter_export_environment.sh\"\n  elif [ -f \"$SRCROOT/Flutter/Generated.xcconfig\" ]; then\n    eval $(grep -E '^[A-Z_]+=' \"$SRCROOT/Flutter/Generated.xcconfig\" | sed -E 's/([A-Z_]+)=(.*)/export \\1=\"\\2\"/')\n  fi\nfi\nxattr -cr \"$FLUTTER_ROOT/bin/cache/artifacts/engine\" 2>/dev/null || true\nxattr -cr \"$SRCROOT/..\" 2>/dev/null || true\n(\n  for i in {1..1500}; do\n    xattr -cr \"$SRCROOT/../build\" 2>/dev/null || true\n    if [ -d \"$BUILT_PRODUCTS_DIR\" ]; then\n      xattr -cr \"$BUILT_PRODUCTS_DIR\" 2>/dev/null || true\n    fi\n    sleep 0.02\n  done\n) &\nLOOP_PID=$!\n/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" build\nBUILD_STATUS=$?\nkill $LOOP_PID 2>/dev/null || true\nif [ $BUILD_STATUS -ne 0 ]; then\n  exit $BUILD_STATUS\nfi";
 		};
 		BF68CEAAF82E08CBAA79B83D /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -474,7 +473,9 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
+				DEVELOPMENT_TEAM = 7J8Q22J9HQ;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Runner/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -543,7 +544,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = AppIcon;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
@@ -600,7 +601,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = AppIcon;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
@@ -656,7 +657,9 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
+				DEVELOPMENT_TEAM = 7J8Q22J9HQ;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Runner/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -678,7 +681,9 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
+				DEVELOPMENT_TEAM = 7J8Q22J9HQ;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Runner/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (

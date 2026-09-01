@@ -5,9 +5,10 @@ import '../theme/app_typography.dart';
 
 enum AppButtonVariant { primary, secondary, outlined, danger }
 
-/// Reusable primary and secondary action button with loading support.
+/// Reusable primary and secondary action button with inline loading state.
 class AppButton extends StatelessWidget {
   final String label;
+  final String? loadingLabel;
   final VoidCallback? onPressed;
   final IconData? icon;
   final bool isLoading;
@@ -19,6 +20,7 @@ class AppButton extends StatelessWidget {
     super.key,
     required this.label,
     required this.onPressed,
+    this.loadingLabel,
     this.icon,
     this.isLoading = false,
     this.variant = AppButtonVariant.primary,
@@ -30,6 +32,7 @@ class AppButton extends StatelessWidget {
     super.key,
     required this.label,
     required this.onPressed,
+    this.loadingLabel,
     this.icon,
     this.isLoading = false,
     this.width,
@@ -40,6 +43,7 @@ class AppButton extends StatelessWidget {
     super.key,
     required this.label,
     required this.onPressed,
+    this.loadingLabel,
     this.icon,
     this.isLoading = false,
     this.width,
@@ -50,6 +54,7 @@ class AppButton extends StatelessWidget {
     super.key,
     required this.label,
     required this.onPressed,
+    this.loadingLabel,
     this.icon,
     this.isLoading = false,
     this.width,
@@ -60,6 +65,7 @@ class AppButton extends StatelessWidget {
     super.key,
     required this.label,
     required this.onPressed,
+    this.loadingLabel,
     this.icon,
     this.isLoading = false,
     this.width,
@@ -76,7 +82,7 @@ class AppButton extends StatelessWidget {
 
     switch (variant) {
       case AppButtonVariant.primary:
-        bg = isEnabled ? AppColors.primary : AppColors.primary.withValues(alpha: 0.5);
+        bg = isEnabled ? AppColors.primary : AppColors.primary.withValues(alpha: 0.7);
         fg = AppColors.textOnPrimary;
         break;
       case AppButtonVariant.secondary:
@@ -92,7 +98,7 @@ class AppButton extends StatelessWidget {
         );
         break;
       case AppButtonVariant.danger:
-        bg = isEnabled ? AppColors.suspicious : AppColors.suspicious.withValues(alpha: 0.5);
+        bg = isEnabled ? AppColors.suspicious : AppColors.suspicious.withValues(alpha: 0.7);
         fg = Colors.white;
         break;
     }
@@ -101,7 +107,7 @@ class AppButton extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        if (isLoading)
+        if (isLoading) ...[
           SizedBox(
             width: 18,
             height: 18,
@@ -109,8 +115,15 @@ class AppButton extends StatelessWidget {
               strokeWidth: 2.2,
               valueColor: AlwaysStoppedAnimation<Color>(fg),
             ),
-          )
-        else ...[
+          ),
+          if (loadingLabel != null) ...[
+            const SizedBox(width: 10),
+            Text(
+              loadingLabel!,
+              style: AppTypography.button.copyWith(color: fg),
+            ),
+          ],
+        ] else ...[
           if (icon != null) ...[
             Icon(icon, size: 18, color: fg),
             const SizedBox(width: 8),
